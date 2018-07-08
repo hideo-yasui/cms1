@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title></title>
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="target-densitydpi=device-dpi, width=768, maximum-scale=1.0, user-scalable=yes">
+<meta charset="utf-8">
+<link rel="icon" href="/images/main/favicon.png" type="image/ico">
+<link rel="stylesheet" media="all" href="/css/lib/jquery-ui.css">
+<link rel="stylesheet" media="all" href="/css/application.css">
+<link rel="stylesheet" media="all" href="/css/treeview.css">
+<link rel="stylesheet" media="all" href="/css/icon.css">
+<link rel="stylesheet" media="all" href="/css/lib/select2.css">
+<style>
+input[type=file] {
+	display:none;
+}
+.nav--header--search{
+	float:left;
+	list-style-type: none;
+	margin-top:24px;
+
+}
+.nav--header__menu_item{
+	float:left;
+}
+
+
+.btn.icons.right_text{
+  padding: 0 16px 0 4px;
+}
+td .btn.icons {
+	padding: 0 0 0 4px;
+}
+td .btn.icons span.icon{
+	margin-top:8px;
+	margin-left:4px;
+}
+.list--user__table a{
+	color : #0066AA;
+}
+.buttonmenu.top a{
+	padding:0 8px 0 8px;
+	font-size:12px;
+}
+</style>
+
+<script src="/js/lib/jquery.js"></script>
+<script src="/js/lib/jquery.barcode.js"></script>
+<script src="/js/lib/jquery-ui.js"></script>
+<script src="/js/lib/jquery.jpostal.js"></script>
+<script src="/js/lib/datepicker-ja.js"></script>
+<script src="/js/lib/timsort.js"></script>
+<script src="/js/lib/utf.js"></script>
+<script src="/js/lib/base64.js"></script>
+<script src="/js/lib/inflate.js"></script>
+<script src="/js/lib/deflate.js"></script>
+<script src="/js/lib/d3.min.js"></script>
+<script src="/js/common/basicChart.js"></script>
+<script src="/js/common/util.js"></script>
+<script src="/js/common/treeView.js"></script>
+<script src="/js/common/listTable.js"></script>
+<script src="/js/base/fileUI.js"></script>
+<script src="/js/base/service.js"></script>
+<script src="/js/base/dom.js"></script>
+<script src="/js/base/front.js"></script><script src="/js/base.js"></script>
+<script src="/js/common.js"></script>
+<script src="/js/listPage/pageLoad.js"></script>
+<script src="/js/lib/bootstrap.min.js"></script>
+<script src="/js/lib/select2.js"></script>
+</head>
+	<body>
+		<div class="wrp">
+			<header class="header" style="overflow-y:auto;">
+				<h1 class="header__logo" style="background-color:#666;">
+					<a href="javascript:void(0);">
+					<h2 style="color:#FFF;font-size:26px;" id="systemname">システム名</h2>
+					</a>
+				</h1>
+				<nav  id="treeMenu" class="treeview header__nav nav--global" >
+				</nav>
+			</header>
+			<div class="container">
+				<div class="hide">
+					<div id="message" style="" type="dialog">
+					</div>
+					<div id="loading" type="dialog">
+						<div class="loadtext">
+							データを読み込んでいます。<br>お待ちください
+						</div>
+					</div>
+					<div id="subDialog" style="" type="dialog">	</div>
+					<div id="previewDialog" width="auto" type="dialog">	</div>
+				</div>
+
+				<main class="main" id="main">
+					<header class="main--header nav--header">
+						<nav class="nav--header__spmenu">
+							<div class="nav--header__spmenu_btn" id="snav"></div>
+						</nav>
+						<!-- ②メインのヘッダー部分　外に出したい-->
+						<h1 class="nav--header__title" style="margin-right:16px;"></h1>
+						<div style="float:right">
+							<ul class="nav--header--search" style="display: inline-block; float:left;">
+								<li class="nav--header--search__item">
+									<div class="form--text" >
+										<span class="_buttonmenu">
+											<input type="text" value="" placeholder="検索するキーワード" class="form--text__field" name="p_search_word" accesskey="search">
+											<a href="javascript:void(0);" accesskey="search" class="form--text__btn btn icons" style="padding:0 6px;">
+												<span class="icon search"></span>
+											</a>
+										</span>
+										<span class="buttonmenu top">
+
+										</span>
+									</div>
+								</li>
+							</ul>
+							<ul class="nav--header__menu" style="">
+								<li class="nav--header__menu_item">
+									<a>
+										<span class="icon--account"></span>アカウント
+									</a>
+									<div class="nav--header__menu_dropdown">
+										<!-- ③吹き出しのドロップダウン部分-->
+										<div class="nav--account">
+											<div class="nav--account__item_status">
+												<div id="user_organization" class="nav--account__item_company">(所属)</div>
+												<div id="user_name" class="nav--account__item_name">(氏名)</div>
+												<div id="user_ipaddr" class="nav--account__item_ip">(IPアドレス)</div>
+											</div>
+											<ul class="nav--account__menu">
+												<li id="nav_support" class="nav--account__item">
+													<a href="https://www.cykinso.co.jp/inquiry/" target="_blank" class="nav--account__link">お問い合わせ</a>
+												</li>
+												<li id="nav_account" class="nav--account__item">
+													<a href="javascript:accountEdit();" class="nav--account__link">アカウント編集</a>
+												</li>
+												<li id="nav_password" class="nav--account__item">
+													<a href="javascript:passwordEdit();" class="nav--account__link">パスワード変更</a>
+												</li>
+												<li id="nav_usersetting" class="nav--account__item">
+													<a href="javascript:userSettingEdit();" class="nav--account__link">ユーザー設定</a>
+												</li>
+												<li id="nav_logout" class="nav--account__item">
+													<a href="javascript:logout();" class="nav--account__link">ログアウト</a>
+												</li>
+											</ul>
+										</div>
+									</div>
+								</li>
+							</ul>
+						</div>
+					</header>
+					<div id="page1" type="page" class="main--body" style="min-height:1024px;">
+						<section class="section--list">
+							<!-- ④検索フォーム部分-->
+							<header class="section--list__header">
+								<div style="float:left;" class="buttonmenu left">
+								</div>
+								<div style="float:right;" class="buttonmenu right">
+								</div>
+								<div style="float:right;" class="_buttonmenu">
+									<a href="javascript:void(0);" accesskey="pagestart" class="section--list__header_add btn icons">
+										<span class="icon start"></span>
+									</a>
+									<a href="javascript:void(0);" accesskey="pageprev" class="section--list__header_add btn icons">
+										<span class="icon prev"></span>
+									</a>
+									<span id="pageInfo" accesskey="pageprev" class="section--list__header_add" style="text-align:center;width:240px;padding:8px 8px 0 0;">
+									</span>
+									<a href="javascript:void(0);" accesskey="pagenext" class="section--list__header_add btn icons">
+										<span class="icon next"></span>
+									</a>
+									<a href="javascript:void(0);" accesskey="pageend" class="section--list__header_add btn icons">
+										<span class="icon end"></span>
+									</a>
+									<a href="javascript:void(0);" accesskey="back" class="section--list__header_add btn icons right_text">
+										<span class="icon back"></span>戻る
+									</a>
+								</div>
+							</header>
+							<!-- ④検索結果部分-->
+							<div id="listTable" class="section--list__body">
+								<div class="list--user">
+									<table class="list--user__table">
+									</table>
+									<div class="list--user__pagenate">
+										<ul class="list--user__pagenate_memu"></ul>
+									</div>
+								</div>
+							</div>
+						</section>
+
+					</div>
+
+					<div id="page2" type="page" class="main--body" style="display:none;">
+					</div>
+
+				</main>
+			</div>
+		</div>
+	</body>
+</html>

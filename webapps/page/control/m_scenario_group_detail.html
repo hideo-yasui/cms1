@@ -1,0 +1,53 @@
+<section class="section--basic">
+	<div class="section--basic__body">
+		<input type="hidden" name="name" value="">
+		<dl class="form__wrp">
+			<dt class="form__dt">シナリオグループ名</dt>
+			<dd class="form__dd">
+				<div class="">
+					<span style="word-wrap: break-word;" type="label" id="name" class="form--label__field"></span>
+				</div>
+			</dd>
+		</dl>
+		<dl class="form__wrp">
+			<dt class="form__dt">説明</dt>
+			<dd class="form__dd">
+				<div class="">
+					<span style="word-wrap: break-word;" type="label" id="remark" class="form--label__field"></span>
+				</div>
+			</dd>
+		</dl>
+		<dl class="form__wrp">
+			<dt class="form__dt">実施日時</dt>
+			<dd class="form__dd">
+				<div class="">
+					<span style="word-wrap: break-word;" type="label" id="add_time" class="form--label__field"></span>
+				</div>
+			</dd>
+		</dl>
+		<div class="form__submit">
+			<a href="javascript:void(0);" class="btn icons" style="padding:0 12px 0 2px;display:inline-block;font-size:12px;" onClick="scenario_test_start();">
+				<span class="icon save"></span>テスト実行
+			</a>
+			<a href="javascript:void(0);" class="btn icons" style="padding:0 12px 0 2px;display:inline-block;font-size:12px;" accesskey="back">
+				<span class="icon back"></span>戻る
+			</a>
+		</div>
+	</div>
+</section>
+<script >
+function scenario_test_start(){
+	var req = front.getFormValue("page2");
+	var _callback = function(){
+		service.postAjax("/v1/testtool/scenario/group/"+req["name"]+"/start", {},
+			function(result, st, xhr) {
+				if(callback && $.type(callback)=="function") callback(result);
+			},
+			function(xhr, st, err) {
+				service.error("service.postAjax\n"+err.message+"\n"+xhr.responseText);
+			}
+		);
+	};
+	dom.confirmMessage("シナリオグループテスト実行" ,"シナリオグループ["+req["name"]+"]実行しますか？",  _callback);
+}
+</script>

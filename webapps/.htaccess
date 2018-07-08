@@ -1,0 +1,7 @@
+RewriteEngine on
+RewriteCond %{REQUEST_URI} !(^/js/)
+RewriteCond %{REQUEST_URI} !(^/css/)
+RewriteCond %{REQUEST_URI} !(^/images/)
+RewriteCond %{REQUEST_URI} !(^/fonts/)
+RewriteCond %{REQUEST_URI} !(^/json/)
+RewriteRule ^(.*)$ index.php [NC,L]

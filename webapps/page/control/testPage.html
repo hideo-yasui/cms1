@@ -1,0 +1,546 @@
+<script>
+var pageKey = {};
+var _cache = {};
+function systemCodeOnchange(){
+	console.log("systemCodeOnchange");
+	dom.selectFormLoad("page1", $("select[name=SEARCH_ID]"));
+	//$("select[name=SEARCH_ID]").val($("select[name=SEARCH_ID] option:eq(0)").val());
+}
+//検証ボタン押下
+function pageTestStart(){
+	var _searchId = $("select[name=SEARCH_ID]").val();
+	$("#system").html($("select[name=SYSTEM_CODE] option:selected").text());
+	$("#query").html($("select[name=SEARCH_ID] option:selected").text());
+	$("#data1").html($("textarea[name=requestParam]").val());
+	$("#data2").html($("textarea[name=searchParamData]").val());
+	getData("m_search_edit", {ID : _searchId}, function(data){
+		var p = $("<p></p>");
+		p.html(data[0]["OPTION_STRING"]);
+		_cache["QUERY_CODE"] = data[0]["SEARCH_CODE"];
+		var option = p.html();
+		option = JSON.parse("{"+option+"}");
+
+		$("#testResult tbody").empty();
+		$("#pageResult").empty();
+		pageKey = {};
+		//★検証１：各機能（ボタン）に対する設定をチェックします。
+		if(option["control"]){
+			console.log("pageTestStart:"+option["control"].join(","));
+
+			for(var i=0,n=option["control"].length;i<n;i++){
+				var _type = option["control"][i];
+				var _metadata = service.getCodeData("BUTTON", _type);
+				if(_metadata && _metadata.length>1){
+					var _type2 = _type;
+					if(_type2.substring(0,4)=="page") _type2="pager";
+					if(_type=="refresh"){
+						testSearchQuery("#testResult",[_metadata[0], _metadata[1]], null);
+					}
+ 					else if( _type=="back") {
+						addResult("#testResult",[_metadata[0], _metadata[1]], {"setting" : "不要"})
+					}
+					else {
+						testQuery([_metadata[0], _metadata[1]], _type2);
+					}
+				}
+				else {
+					if(option["button"] && option["button"][_type]){
+						var _text = option["button"][_type]["text"];
+						var _type2 = option["button"][_type]["accesskey"];
+						var _custom = option["button"][_type]["alt"];
+						_cache["CUSTOM"] = _custom;
+						if(_type2=="dialog") _type2="subpage";
+						testQuery([_custom, _text+"(拡張ボタン:"+_type+")"], _type2)
+					}
+				}
+			}
+		}
+		if(option["header"]){
+			var _listLink = [];
+			var _listSort = [];
+			//検証２と検証３用の準備
+			for(var key in option["header"]){
+				var data  = option["header"][key];
+				switch(data["type"]){
+					case "edit_copy_delete":
+						_listLink.push(["rowcopy"]);
+					case "edit_delete":
+						_listLink.push(["rowedit"]);
+					case "delete":
+						_listLink.push(["rowdelete"]);
+						break;
+					case "link":
+						_listLink.push([data["accesskey"], data["target"]]);
+						break;
+				}
+				if(data["sort"]){
+console.log("field:"+data["field"]);
+					_listSort.push( [data["sort"], data["text"], data["field"]]);
+				}
+			}
+			//★検証２：一覧のリンクに対する設定をチェックします
+			for(var i=0,n=_listLink.length;i<n;i++){
+				var _type = _listLink[i][0];
+				if(util.isEmpty(_type)){
+					addResult("#testResult",["link?", "?"], {"setting" : "0"})
+					continue;
+				}
+				var _metadata = service.getCodeData("LIST_BUTTON", _type);
+				var _meta1 = _metadata[0];
+				var _meta2 = _metadata[1];
+				if(!_metadata || _metadata.length<1){
+					addResult("#testResult",["link??", _type], {"setting" : "0"})
+					continue;
+				}
+				if(_listLink[i].length>1){
+					_cache["CUSTOM"] = _listLink[i][1];
+					_meta2=_meta2+":("+_meta1+","+_listLink[i][1]+")";
+					_meta1 = _listLink[i][1];
+				}
+				var _type2 = _type;
+				if(_type2=="dialog") _type2="subpage";
+				testQuery([_meta1, _meta2] ,_type2);
+			}
+			//★検証３：sort設定を利用し、m_searchのクエリを実行します
+			for(var i=0,n=_listSort.length;i<n;i++){
+				var _sort = _listSort[i][0];
+				var _text = _listSort[i][1];
+				var _field = [_listSort[i][2]];
+				testSearchQuery("#testResult",[_sort+" asc", _text+"(sort)"], {_order_ : _sort+" asc"}, _field);
+				testSearchQuery("#testResult",[_sort+" desc", _text+"(sort)"], {_order_ : _sort+" desc"}, _field);
+			}
+			//★検証４：サブページを伴う場合の定義を表示
+			for(var key in pageKey){
+				testPageQuery(key);
+			}
+		}
+	});
+}
+//m_queryのテスト用クエリをtypeごとに実行して、結果を表示する
+function testQuery(_metadata, type){
+	var _req = {
+		SYSTEM_CODE : $("select[name=SYSTEM_CODE]").val(),
+		QUERY_CODE : _cache["QUERY_CODE"],
+		CUSTOM : _cache["CUSTOM"]
+	};
+	var option = $("textarea[name=requestParam]").val();
+	if(!util.isEmpty(option) && option.indexOf(":") >=0 ){
+		var p = $("<p></p>");
+		p.html(option);
+		option = p.html();
+		option = JSON.parse("{"+option+"}");
+		_req = $.extend(_req, option);
+	}
+	getData("test_"+type, _req,  function(data){
+		addResult("#testResult",_metadata, data[0]);
+	});
+}
+//m_searchを実行して、結果を表示する
+function testSearchQuery(selector, _metadata, req, field){
+	var _req = {
+		_order_ : 1,
+		_offset_ : 0,
+		_limit_ : 20,
+		SYSTEM_CODE : $("select[name=SYSTEM_CODE]").val(),
+ 		query_code:  _cache["QUERY_CODE"]
+	};
+	if(req!=null) _req = $.extend(_req, req);
+	_testSearchQuery(selector,_metadata, _req, field, true);
+}
+//m_query export用のクエリを実行して、結果を表示する
+function testExportQuery(selector, _metadata, req, field){
+	var _req = {
+		SYSTEM_CODE : $("select[name=SYSTEM_CODE]").val(),
+ 		query_code:  _cache["QUERY_CODE"]+"_export"
+	};
+	if(req!=null) _req = $.extend(_req, req);
+	_testSearchQuery(selector,_metadata, _req, field, false);
+}
+function _testSearchQuery(selector, _metadata, req, field, isSearch){
+	var option = $("textarea[name=requestParam]").val();
+	var _req = req;
+	if(!util.isEmpty(option) && option.indexOf(":") >=0 ){
+			var p = $("<p></p>");
+			p.html(option);
+			option = p.html();
+			option = JSON.parse("{"+option+"}");
+			_req = $.extend(_req, option);
+	}
+
+	//isSearchにて、m_search / m_queryを切り替える
+	var url = "get"+"/"+req["query_code"];
+	if(isSearch) url = "search";
+
+	service.getAjax(false, url,  _req,
+		function(result, st, xhr) {
+			if(result["status"]=="success"){
+				var count = result["data"].length;
+				if(isSearch) count = result["count"];
+				var _result = {"search" : count};
+				for(var key in result["data"][0]){
+					_result[key] = "["+result["data"][0][key]+"]";
+					break;
+				}
+				if(!util.isEmpty(field) && !util.isEmpty(result["data"]) && result["data"].length>0) {
+					for(var i=0,n=field.length;i<n;i++){
+						_result[field[i]] = "["+result["data"][0][field[i]]+"]";
+					}
+				}
+				addResult(selector, _metadata, _result);
+			}
+			else {
+				addResult(selector, _metadata, {search : 0, message : result["message"]});
+			}
+		},
+		function(xhr, st, err) {
+			addResult(selector, _metadata, {search : 0, error : err.message});
+		}
+	);
+}
+//m_pageのOPTIONをばらして表示する
+function testPageQuery(type){
+	var pagecode = _cache["QUERY_CODE"]+"_"+type;
+	var _template1 = [
+		'<div class="page_break"></div>',
+		'<hr class=pageSetting></hr>',
+		'<dt class="form__dt">#PAGENAME#',
+		'</dt>',
+		'<dd class="form__dd">',
+		'<table class="resultTable">',
+		'<thead>',
+		'<tr>',
+		'<th>ボタン</th>',
+		'<th>タイプ</th>',
+		'</tr>',
+		'</thead>',
+		'<tbody>#BUTTONS#',
+		'</tbody>',
+		'</table>',
+		'<table class="resultTable">',
+		'<thead>',
+		'<tr>',
+		'<th>フィールド</th>',
+		'<th>タイプ</th>',
+		'<th>ラベル</th>',
+		'<th>必須</th>',
+		'</tr>',
+		'</thead>',
+		'<tbody>#FORMS#',
+		'</tbody>',
+		'</table>',
+		'<table id="'+pagecode+'" class="resultTable">',
+		'<thead>',
+		'<tr>',
+		'<th>検索条件</th>',
+		'<th>ケース</th>',
+		'<th>結果</th>',
+		'<th>詳細</th>',
+		'</tr>',
+		'</thead>',
+		'<tbody>',
+		'</tbody>',
+		'</table>',
+		'</dd>',
+	].join("");
+	var systemcode = $("select[name=SYSTEM_CODE]").val();
+	console.log("pageQuery:"+systemcode+"/"+pagecode);
+	var _searchTestMode = 0;
+	var _searchField = {};
+	var _requiredField = {};
+
+	service.getAjax(false, "./getpage/"+systemcode+"/"+pagecode, {},
+		function(result, st, xhr) {
+			var param = result["data"][0];
+			var title = param["NAME"];
+			_template1= _template1.replace("#PAGENAME#", title+"("+pagecode+":"+param["PAGE_TYPE"]+")");
+			var p = $("<p></p>");
+			p.html(param["OPTION_STRING"]);
+			var option = p.html();
+			if(option && option!="" && option.indexOf(":")>=0) {
+				option = JSON.parse("{"+option+"}");
+				switch(param["PAGE_TYPE"]){
+					case "param":
+						var buttons = option["button"];
+						var _buttonsText = "";
+						for(var key in buttons){
+							_buttonsText += "<tr>"
+							_buttonsText += "<td>"+buttons[key]["text"]+"</td>";
+							_buttonsText += "<td>"+buttons[key]["accesskey"]+"</td>";
+							_buttonsText += "</tr>"
+							if(buttons[key]["accesskey"]=="search")	_searchTestMode = 1;
+							if(buttons[key]["accesskey"]=="export")	_searchTestMode = 2;
+						}
+						_template1 = _template1.replace("#BUTTONS#", _buttonsText);
+						var forms = option["form"];
+						var _formsText = "";
+						for(var key in forms){
+							_formsText += "<tr>"
+							_formsText += "<td>"+forms[key]["field"]+"</td>";
+							_formsText += "<td>"+forms[key]["type"]+"</td>";
+							if(forms[key]["text"])	{
+								_formsText += "<td>"+forms[key]["text"]+"</td>";
+							}
+							else {
+								_formsText += "<td>ー</td>";
+								forms[key]["text"] = "-";
+							}
+							if(forms[key]["required"]){
+								_formsText += "<td>〇</td>";
+								_requiredField[forms[key]["field"]] = forms[key]["text"];
+							}
+							else {
+								_formsText += "<td>ー</td>";
+								if(forms[key]["type"]!="hidden"){
+									_searchField[forms[key]["field"]] = forms[key]["text"];
+								}
+							}
+							_formsText += "</tr>"
+						}
+						_template1 = _template1.replace("#FORMS#", _formsText);
+
+						break;
+					case "url" :
+						break;
+					case "html" :
+						break;
+				}
+			}
+			else {
+				_template1= _template1.replace("#FORMS#",  "設定なし");
+			}
+		},
+		function(xhr, st, err) {
+			_template1= _template1.replace("#PAGENAME#", pagecode);
+			_template1= _template1.replace("#FORMS#", err.message);
+		}
+	);
+	$("#pageResult").append(_template1);
+	if(_searchTestMode>0){
+		//★検証５：検索処理、ファイル出力（SELECT文）を伴う場合の検索を実行
+		var searchParamData = $("textarea[name=searchParamData]").val();
+		if(!util.isEmpty(searchParamData) && searchParamData.indexOf(":") >=0 ){
+				var p = $("<p></p>");
+				p.html(searchParamData);
+				searchParamData = JSON.parse("{"+p.html()+"}");
+				for(var key in _requiredField){
+					if(!searchParamData[key]){
+						addResult("#"+pagecode,["検索用必須パラメータ["+key+"]なし", "検索できません"], {search : 0});
+						return;
+					}
+					_requiredField[key] = searchParamData[key];
+				}
+				var _searchPattern = [];
+				_requiredField["__testcase"] = "必須パラメータのみ検索";
+				_requiredField["__testcase_field"] = "";
+				_searchPattern.push(_requiredField);
+				for(var key in _searchField){
+					if(!searchParamData[key]){
+						addResult("#"+pagecode,["検索用パラメータ["+key+"]なし", "検索できません"], {search : 0});
+						continue;
+					}
+					var _param = {};
+					_param[key] = searchParamData[key];
+					_param = $.extend(_param, _requiredField);
+					_param["__testcase"] = key+":"+_searchField[key]+"検索";
+					_param["__testcase_field"] = key+"="+searchParamData[key];
+console.log("searchPattern:"+_param);
+					_searchPattern.push(_param);
+				}
+				for(var i=0,n=_searchPattern.length;i<n;i++){
+					var _field = [];
+					var _pattern = _searchPattern[i];
+					var _req = {};
+					if(util.isEmpty(_pattern)) continue;
+					for(var key in _pattern){
+						if(key == "__testcase") continue;
+						if(key == "__testcase_field") continue;
+						_req [key] = _pattern[key];
+						_field.push(key);
+					}
+					if(_searchTestMode==1)	testSearchQuery("#"+pagecode,[_pattern["__testcase_field"], _pattern["__testcase"]], _req, _field);
+					else if(_searchTestMode==2)	testExportQuery("#"+pagecode,[_pattern["__testcase_field"], _pattern["__testcase"]], _req, _field);
+				}
+		}
+		else {
+			addResult("#"+pagecode,["検索用パラメータなし", "検索できません"], {search : 0});
+		}
+	}
+	else {
+		addResult("#"+pagecode,["検索処理なし", "検索不要"], {search : "-"});
+	}
+}
+//結果明細の登録
+function addResult(selector,metadata, data){
+	var _result = '<tr>';
+	for(var i=0, n=metadata.length;i<n;i++){
+		_result += '<td>'+metadata[i]+'</td>';
+	}
+	var _result2 = '';
+	var _status = "<font color=blue>True</font>";
+	var _isPage = false;
+	_result2 += '<td>'
+	for(var key in data){
+		_result2 +=key+"="+data[key];
+		if(data[key]=="0") _status="<font color=red>False</font>";
+		if(key.indexOf("page_setting")>=0){
+			_isPage = true;
+		}
+	}
+	_result2 += '</td>'
+	_result += '<td>'+_status+'</td>'+_result2;
+	_result += '</tr>';
+	$(selector+" tbody").append(_result);
+	if(_isPage){
+		switch(metadata[0]){
+			case "newadd":
+			case "rowedit":
+			case "rowcopy":
+				pageKey["add"] = true;
+				break;
+			case "detailsearch":
+				pageKey["search"] = true;
+				break;
+			default:
+				//	大体、subpage,dialog類を設定する
+				pageKey[metadata[0]] = true;
+		}
+	}
+}
+</script>
+<style>
+table.resultTable {
+	border-collapse: collapse;
+	margin-bottom:24px;
+}
+table.resultTable tr {
+}
+table.resultTable  th{
+	background-color:#CCC;
+	color : #FFF;
+}
+table.resultTable  th,
+table.resultTable  td {
+	padding:4px 8px 4px 8px;
+	border-style : solid;
+ 	border-width:1px;
+ 	border-color : #888;
+}
+
+.pageSetting {
+	width:90%;
+	margin-bottom:24px;
+	border-style : solid;
+ 	border-width:3px 0 0 0;
+ 	border-color : #4AACCA;
+	clear:both;
+}
+@media print{
+	body {
+		-webkit-print-color-adjust: exact;
+	}
+	.print_none{
+		display:none;
+	}
+	.page_break{
+		page-break-after: always;
+	}
+}
+</style>
+<section class="section--basic">
+	<div class="section--basic__body">
+	<div class=" print_none">
+		<dl class="form__wrp">
+			<dt class="form__dt">システム
+				<span class="form__required">*</span>
+			</dt>
+			<dd class="form__dd">
+				<div class="form__middle">
+					<div class="form--select__wrp">
+						<select accesskey="m_query" type="select" query="get_system" code_field="SYSTEM_CODE" name_field="NAME" class="form--select__field" name="SYSTEM_CODE" required="true" onChange="systemCodeOnchange();"></select>
+					</div>
+				</div>
+			</dd>
+		</dl>
+		<dl class="form__wrp">
+			<dt class="form__dt">検索クエリ
+				<span class="form__required">*</span>
+			</dt>
+			<dd class="form__dd">
+				<div class="form__middle">
+					<div class="form--select__wrp">
+						<select accesskey="m_query" type="select" query="get_search_by_systemcode" code_field="ID" name_field="NAME" class="form--select__field" name="SEARCH_ID" required="true"></select>
+					</div>
+				</div>
+			</dd>
+		</dl>
+		<dl class="form__wrp">
+			<dt class="form__dt">表示用パラメータ
+			</dt>
+			<dd class="form__dd">
+				<div class="js--areatoggle">
+					<textarea type="textarea" class="form--textarea__field" name="requestParam"  placeholder='"param1" : paramValue, "param2" : paramValue'></textarea>
+				</div>
+			</dd>
+		</dl>
+		<dl class="form__wrp">
+			<dt class="form__dt">検索テスト用パラメータ
+			</dt>
+			<dd class="form__dd">
+				<div class="js--areatoggle">
+					<textarea type="textarea" class="form--textarea__field" name="searchParamData"  placeholder='"param1" : paramValue, "param2" : paramValue'></textarea>
+				</div>
+			</dd>
+		</dl>
+		<div class="form__submit">
+			<a href="javascript:void(0);" class="btn icons" style="padding:0 12px 0 2px;display:inline-block;font-size:14px;" onClick="javascript:pageTestStart();">
+				<span class="icon refresh"></span>検証
+			</a>
+			<a href="javascript:void(0);" class="btn icons" style="padding:0 12px 0 2px;display:inline-block;font-size:14px;" onClick="javascript:window.print();">
+				<span class="icon export"></span>出力
+			</a>
+		</div>
+	</div>
+	<dl class="form__wrp">
+		<hr class="pageSetting"></hr>
+		<dt class="form__dt">条件
+		</dt>
+		<dd class="form__dd">
+			<table class="resultTable">
+				<thead>
+				<tr>
+					<th>システム</th><td id="system"></td>
+					<th>検索クエリ</th><td id="query"></td>
+				</tr>
+				<tr>
+					<th>表示用パラメータ</th><td id="data1"></td>
+					<th>検索テスト用パラメータ</th><td id="data2"></td>
+				</tr>
+				</thead>
+				<tbody>
+				</tbody>
+			</table>
+		</dd>
+	</dl>
+	<dl class="form__wrp">
+		<dt class="form__dt">検証結果
+		</dt>
+		<dd class="form__dd">
+			<table id="testResult" class="resultTable">
+				<thead>
+				<tr>
+					<th>機能ID</th>
+					<th>機能名</th>
+					<th>結果</th>
+					<th>詳細</th>
+				</tr>
+				</thead>
+				<tbody>
+				</tbody>
+			</table>
+		</dd>
+	</dl>
+	<div class="page_break"></div>
+	<dl class="form__wrp"  id="pageResult">
+
+	</dl>
+</section>

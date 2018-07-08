@@ -1,0 +1,91 @@
+a.icons span.icon {
+	float:left;
+	display: block;
+	width:16px;
+	height:16px;
+	background-image: url("/images/icon/monosite05.png");
+	background-repeat: no-repeat;
+	margin-top:12px;
+	margin-left:8px;
+}
+a.icons span.add{
+	background-position: -441px -89px;
+}
+a.icons span.copy{
+	background-position: -67px -170px;
+}
+a.icons span.edit{
+	background-position: -99px -170px;
+}
+a.icons span.save{
+	background-position: -441px -129px;
+}
+a.icons span.next{
+	background-position: -255px -48px;
+}
+a.icons span.prev{
+	background-position: -286px -48px;
+}
+a.icons span.start{
+	background-position: -193px -48px;
+}
+a.icons span.end{
+	background-position: -224px -48px;
+}
+a.icons span.close{
+	background-position: -409px -129px;
+}
+a.icons span.login{
+	background-position: -130px -334px;
+}
+a.icons span.clean{
+	background-position: -68px -88px;
+}
+a.icons span.clear{
+	background-position: -68px -88px;
+}
+a.icons span.mail{
+	background-position: -222px -252px;
+}
+a.icons span.check{
+	background-position: -36px -88px;
+}
+a.icons span.back{
+	background-position: -99px -7px;
+}
+a.icons span.refresh{
+	background-position: -192px -129px;
+}
+a.icons span.setting{
+	background-position: -409px -334px;
+}
+a.icons span.switch{
+	background-position: -317px -334px;
+}
+a.icons span.del{
+	background-position: -472px -89px;
+}
+a.icons span.detail{
+	background-position: -36px -334px;
+}
+a.icons span.export{
+	background-position: -190px -170px;
+}
+a.icons span.import{
+	background-position: -161px -170px;
+}
+a.icons span.search{
+	background-position: -440px -211px;
+}
+a.icons span.preview{
+	background-position: -440px -375px;
+}
+a.icons span.work_st{
+	background-position: -316px -334px;
+}
+a.icons span.work_ed{
+	background-position: -38px -293px;
+}
+a.icons span.link{
+	background-position: -223px -211px;
+}
