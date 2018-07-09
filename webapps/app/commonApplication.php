@@ -24,7 +24,6 @@ class commonApplication extends Application
         return array(
                 '/' => array('controller' => 'comView', 'action' => 'view', 'contents' => 'index'),
                 '/index' => array('controller' => 'comView', 'action' => 'redirectUrl', 'path' => '/'),
-                '/view/:contents' => array('controller' => 'view', 'action' => ''),
                 '/search/:query_code'  => array('controller' => 'comService', 'action' => 'search'),
                 '/get/:query_code'  => array('controller' => 'comService', 'action' => 'query'),
                 '/getedit/:query_code'  => array('controller' => 'comService', 'action' => 'query', 'method' => '_edit'),
@@ -46,28 +45,14 @@ class commonApplication extends Application
                 '/confirm'   =>  array('controller' => 'comView', 'action' => 'requireUrl', 'path' => 'form/confirm.html'),
                 '/forbidden'   =>  array('controller' => 'comView', 'action' => 'requireUrl', 'path' => 'page/forbidden.html'),
                 '/sessionTimeout'   =>  array('controller' => 'comView', 'action' => 'redirectUrl', 'path' => '/login?error=1'),
-                '/authenticate'   =>  array('controller' => 'login', 'action' => 'show'),
-                '/logout'   =>  array('controller' => 'logout', 'action' => 'show'),
-
-                //api testtool
-                '/v1/testtool/scenario/:scenario/event' =>  array("subdir" => "v1", "controller" => "testtool", "action" => "scenario_event"),
-                '/v1/testtool/test/:scenario' =>  array("subdir" => "v1", "controller" => "testtool", "action" => "scenario_test"),
-                '/v1/testtool/test/:test_id/status' =>  array("subdir" => "v1", "controller" => "testtool", "action" => "scenario_test_status"),
-                '/v1/testtool/test/:test_id/detail' =>  array("subdir" => "v1", "controller" => "testtool", "action" => "scenario_test_detail"),
-                '/v1/testtool/test/:test_id/detail/:event_id' =>  array("subdir" => "v1", "controller" => "testtool", "action" => "scenario_test_detail"),
-                '/v1/testtool/test/:test_id/:event_id/capture/diff' =>  array("subdir" => "v1", "controller" => "testtool", "action" => "scenario_test_capture_diff"),
-                '/v1/testtool/test/:test_id/:event_id/capture' =>  array("subdir" => "v1", "controller" => "testtool", "action" => "scenario_test_capture"),
-                '/v1/testtool/test/:test_id/:event_id/error' =>  array("subdir" => "v1", "controller" => "testtool", "action" => "scenario_test_error"),
-                '/v1/testtool/scenario/:scenario' =>  array("subdir" => "v1", "controller" => "testtool", "action" => "scenario"),
-                '/v1/testtool/scenario/group/:scenario_group' =>  array("subdir" => "v1", "controller" => "testtool", "action" => "scenario_group"),
-                '/v1/testtool/test/group/:scenario_group' =>  array("subdir" => "v1", "controller" => "testtool", "action" => "scenario_group_test"),
-                '/v1/testtool/scenario/:scenario/start' =>  array("subdir" => "v1", "controller" => "testtool", "action" => "scenario_start"),
-                '/v1/testtool/scenario/group/:scenario_group/start' =>  array("subdir" => "v1", "controller" => "testtool", "action" => "scenario_group_start"),
-
+                //'/authenticate'   =>  array('controller' => 'login', 'action' => 'show'),
+                '/authenticate' => array('controller' => 'comView', 'action' => 'login'),
+                '/logout'   =>  array('controller' => 'comView', 'action' => 'logout'),
 
                 // Default Routing
                 '/v1/:controller/:action'   =>  array( "subdir" => "v1"),
                 '/:controller/:action'   =>  array("subdir" => "v1"),
+                '/:SYSTEM_CODE/:contents'   =>  array('controller' => 'comView', 'action' => 'view'),
                 '/:contents'   =>  array('controller' => 'comView', 'action' => 'view'),
         );
     }

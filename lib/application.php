@@ -28,7 +28,6 @@ abstract class Application
 		$this->db = $this->dbi->db;
 		$this->setDebugMode($debug);
 		$this->initialize();
-		$this->configure();
 	}
 	/**
 	 * デバッグモードを設定
@@ -53,12 +52,6 @@ abstract class Application
 	{
 		$this->request    = new Request();
 		$this->router     = new Router($this->registerRoutes());
-	}
-	/**
-	 * アプリケーションの設定
-	 */
-	protected function configure()
-	{
 	}
 
 	/**
@@ -161,7 +154,8 @@ abstract class Application
 					throw new HttpNotFoundException($controller_name . ' controller is not found.');
 				}
 				$response = $controller->run($action, $params);
-				if(isset($params["mode"]) && $params["mode"] === "view"){
+				if($controller_name === "comView" ||
+					(isset($params["mode"]) && $params["mode"] === "view")){
 					if($response["status"] === "failed"){
 						showPageForbidden();
 						exitProc($this->db);

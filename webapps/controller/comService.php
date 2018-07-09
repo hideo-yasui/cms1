@@ -175,4 +175,163 @@ class comService extends Controller
 	public function exitProc(){
 		exitProc($this->application->dbi->db);
 	}
+	/**
+	 * ログイン認証を行い認証結果を返却する
+	 * @param dbconnect $DBCON
+	 **/
+	public function auth($params){
+		$status = "success";
+		$description = "";
+		$message = "";
+
+		// get user
+		$this->application->dbi->addConfigLog("auth", "login start", $params["login_id"]);
+		$user = null;
+		if(!isset($params["login_id"]) && isset($params["user_id"])){
+			//login_idをuser_idで補完
+			$params["login_id"] = $params["user_id"];
+		}
+		if(!isset($params["login_id"]) && isset($params["email"])){
+			//login_idをemailで補完
+			$params["login_id"] = $params["email"];
+		}
+		else if(isset($params["password"])){
+			$params["password"] = $params["password"];
+		}
+
+		if(isset($params["login_id"]) && isset($params["password"])){
+			//login_id, passwordを利用したログイン
+			$user = $this->application->dbi->execConfigQuery("login_by_id_pass", array(
+				'login_id'  => $params["login_id"],
+				'password' => $params["password"]
+			));
+		}
+		if(!isset($user) || $user["status"] !== "success"){
+			$status = "failed";
+			$message = "E_BAD_REQUEST";
+			$description = "paramater error:".$user["status"];
+		}
+		else if(count($user["data"]) !== 1) {
+			$status = "failed";
+			$message = "E_EXIST_NODATA";
+			$description = "";
+		}
+
+		if($status === "success") {
+			$user_id = $user["data"][0]["user_id"];
+			$auth_id = $user["data"][0]["auth_id"];
+			$token = $this->get_token($user_id);
+			$result = $this->application->dbi->execConfigQuery("user_token_update", array(
+				'log_type' => 'login',
+				'token' => $token,
+				'auth_id' => $auth_id,
+				'user_id' => $user_id
+			));
+			if ($result["status"] !== "success") {
+				$status = "failed";
+				$message = "ERROR";
+			}
+			else {
+				$this->application->dbi->addConfigLog("auth", "login end", "token=[$token] / user[$user_id]");
+				session_regenerate_id(true) ;
+				$_SESSION["user_token"] = $token;
+				$_SESSION["user_id"] = $user_id;
+			}
+		}
+		$result = array(
+			'status'      => $status,
+			'message'     => $message,
+			'description' => $description
+		);
+		return $result;
+	}
+	/**
+	 * API用 Token発行ロジック
+	 * @param integer $user_id
+	 * @return string
+	 */
+	private function get_token($key)
+	{
+		$tmp = $key.bin2hex(openssl_random_pseudo_bytes(16));
+		$token = substr($tmp,0 ,32);
+		return $token;
+	}
+	/**
+	 * 認証処理
+	 * @return Array
+	 */
+	public function auth_token() {
+		$response = array(
+			'status'      => "success",
+			'message'     => "",
+			'description' => ""
+		);
+		$auth_check_time = 300;
+		$diff_time = $auth_check_time+1;
+		if(!empty($_SESSION["sAccessTime"])) $diff_time    = (time() - $_SESSION["sAccessTime"]);
+		if ($diff_time < $auth_check_time) {
+			return $response;
+		}
+		// validate
+		if (!isset($_SESSION["user_token"])) {
+			$response = array(
+			'status'      => "failed",
+			'message'     => "E_AUTH_FAIL",
+			'description' => "undefined index: required"
+			);
+			return $response;
+		}
+		$result = $this->application->dbi->execConfigQuery("login_by_token", array(
+			'token' => $_SESSION["user_token"]
+		));
+		if ($result["status"] !== "success" || count($result["data"]) === 0) {
+			$response = array(
+				'status'      => "failed",
+				'message'     => "E_AUTH_FAIL",
+				'description' => ""
+			);
+			return $response;
+		}
+		$this->application->dbi->addConfigLog("auth", "authenticate start", 'token=['.$_SESSION["user_token"].'],'.'user_id=['.$result["data"][0]["user_id"].']');
+		// Authenticate sceess
+		$_SESSION["sAccessTime"] = time(); // 最後にアクセスした時間をセット（タイムアウトに使用する）
+		return $response;
+	}
+
+	public function auth_clear(){
+
+		$result = $this->application->dbi->execConfigQuery("login_by_token", array(
+			'token' => $_SESSION["user_token"]
+		));
+		if ($result["status"] !== "success" || count($result["data"]) === 0) {
+			$response = array(
+				'status'      => "failed",
+				'message'     => "E_AUTH_FAIL",
+				'description' => ""
+			);
+			return $response;
+		}
+		$user_id = $result["data"][0]["user_id"];
+		$auth_id = $result["data"][0]["auth_id"];
+		$result = $this->application->dbi->execConfigQuery("user_token_update", array(
+			'log_type' => 'logout',
+			'token' => '',
+			'auth_id' => $auth_id,
+			'user_id' => $user_id
+		));
+
+		session_cache_limiter("nocache");
+		session_cache_expire (0);
+		session_regenerate_id( true ) ;
+
+		$_SESSION = array() ;
+		$sesName = session_name() ;
+		if ( isset( $_COOKIE[$sesName] ) ) {
+			$setExpTime = ( time() - ( 60 * 60 * 24 * 365 ) ) ; // 有効期限を１年前にセット
+			setcookie( $sesName, "", $setExpTime, "/" ) ;
+		}
+		session_destroy();
+		return $this->getResponce();
+	}
+
 }

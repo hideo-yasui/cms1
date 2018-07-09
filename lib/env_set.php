@@ -11,15 +11,6 @@ $gEnvList["SLACK_template"]["INFO"] = array("name" => "INFO", "icon" => ":speech
 $gEnvList["SLACK_template"]["WARNING"] = array("name" => "WARNING", "icon" => ":warning:");
 $gEnvList["SLACK_template"]["ERROR"] = array("name" => "ERROR", "icon" => ":no_entry:");
 
-/***********************************************************************************/
-//----------------------------------------------------------------------------------
-// DB Setting (xxxxxxx)
-//----------------------------------------------------------------------------------
-$gEnvList["DB_host"] = "192.168.1.111";
-$gEnvList["DB_name"] = "mykinso_dev";
-$gEnvList["DB_config_name"] = "config";
-$gEnvList["DB_user"] = "dbadmin";
-$gEnvList["DB_pass"] = "admindb";
 
 /***********************************************************************************/
 //----------------------------------------------------------------------------------
@@ -122,14 +113,5 @@ function getSystemNameByHost() {
 	$tmp       = explode('.', $_SERVER['HTTP_HOST']);
 	$subdomain = $tmp[0];
 
-	if ('pro' === substr($subdomain, -3)) {
-		$system = 'pro';
-	} elseif ('admin' === substr($subdomain, -5)) {
-		$system = 'admin';
-	} elseif ('control' === substr($subdomain, -7)) {
-		$system = 'control';
-	} elseif ('api' === substr($subdomain, -3)) {
-		$system = 'api';
-	}
 	return $system;
 }

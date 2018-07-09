@@ -4,6 +4,22 @@ require_once($_SERVER["DOCUMENT_ROOT"] . '/controller/comService.php');
 class comView extends comService
 {
 	protected $auth_actions = array('');
+	public function login($params){
+		if ($this->request->isGet()) {
+			$this->view(array("contents" => "login"));
+		}
+		else if ($this->request->isPost()) {
+			$values = $this->auth($_POST);
+			if($values["status"] === "success"){
+				header( "Location: /top" ) ;
+				$this->exitProc();
+			}
+		}
+	}
+	public function logout(){
+		$this->auth_clear();
+		$this->view(array("contents" => "login"));
+	}
 	public function requireUrl($params){
 		$path = $_SERVER["DOCUMENT_ROOT"] . '/'.$params["path"];
 		require_once($path);
@@ -71,7 +87,7 @@ class comView extends comService
 			'page_code' => $page_code
 		);
 		$values = $this->application->dbi->execConfigQuery('get_page', $pageData);
-		if($values["status"] =="success"){
+		if($values["status"] === "success"){
 			$data = $values["data"];
 			$option = array();
 			$isAuth = "";
@@ -97,7 +113,7 @@ class comView extends comService
 			}
 			if(isset($option["autologin"]) && !empty($option["autologin"]) ){
 				//自動ログイン、autologinにログイン後の遷移先を設定する
-				$values = getAuthenticateResponse($this->db);
+				$values = $this->auth_token();
 				if($values["status"] ==="success") {
 					header( "Location: /".$option["autologin"] ) ;
 					$this->exitProc();
@@ -106,7 +122,7 @@ class comView extends comService
 
 			if(!isset($option["auth"]) || empty($option["auth"]) || $option["auth"]!="false"){
 				//デフォルトで認証が必要、auth=falseの場合のみ認証を無視できる
-				$values = getAuthenticateResponse($this->db);
+				$values = $this->auth_token();
 				if($values["status"] !=="success") {
 					if($values["message"] === "E_AUTH_TIMEOUT"){
 						$this->showPageSessionTimeout();

@@ -41,7 +41,7 @@ abstract class Controller
 		}
 
 		if ($this->needsAuthentication($action)) {
-			$values = getAuthenticateResponse($this->db);
+			$values = $this->application->dbi->getAuthenticateResponse();
 			if($values["status"] !== "success"){
 				authenticate_error($values["message"], $values["description"]);
 				return $this->forbiddenResponce();

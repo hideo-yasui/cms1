@@ -15,6 +15,7 @@ $(function(){
 function setUserInfo(){
 	var userInfo = util.getLocalData("userinfo");
 	if(util.isEmpty(userInfo)){
+        /*
 		getData("get_userinfo_by_session_enc", {},
 			function(data, st, xhr) {
 				if(data.length>0){
@@ -25,6 +26,7 @@ function setUserInfo(){
 			function(xhr, st, err) {
 			}
 		);
+        */
 	}
 	else {
 		_setUserInfo(userInfo);

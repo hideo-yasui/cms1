@@ -5,7 +5,7 @@
  */
 class Dbi
 {
-	public $dbname = "mykinso_dev";
+	public $dbname = "config";
 	public $dbuser = "dbadmin";
 	public $dbpass = "admindb";
 	public $dbhost = "192.168.1.111";
@@ -20,7 +20,7 @@ class Dbi
 	public function __construct()
 	{
 		$this->system = $GLOBALS['gEnvList']['system'];
-		$this->db = dbConnect();
+		$this->dbConnect();
 	}
 	/**
 	 * アプリケーションの設定
@@ -42,7 +42,6 @@ class Dbi
 			@TXT_LOG("dberr", $_SERVER['SCRIPT_NAME'], basename(__FILE__),__LINE__, "mysqli_connect",  $gEnvList["DB_host"], $gEnvList["DB_user"], "xxxx", $gEnvList["DB_name"], intval($DB_PORT) );
 			return false;
 		}
-		return $this->db;
 	}
 	public function getDatatable($query, $logging=false){
 		$status = "success";
@@ -100,14 +99,14 @@ class Dbi
 
 		if($resultmode !== MYSQLI_USE_RESULT)  $resultmode  = MYSQLI_STORE_RESULT;
 
-		if(!(@mysqli_query($DBCON, "set autocommit = 0", $resultmode))){
-			@TXT_LOG("dberr", $_SERVER['SCRIPT_NAME'], basename(__FILE__),__LINE__, "\terrno:[".mysqli_errno($DBCON)."]", "err:[".mysqli_error($DBCON)."]" );
+		if(!(@mysqli_query($this->db, "set autocommit = 0", $resultmode))){
+			@TXT_LOG("dberr", $_SERVER['SCRIPT_NAME'], basename(__FILE__),__LINE__, "\terrno:[".mysqli_errno($this->db)."]", "err:[".mysqli_error($this->db)."]" );
 			$status = "failed";
 			$message = "ERROR" ;
 			$description = "QUERY EXEC ERROR" ;
 		}
-		else if(!(@mysqli_query($DBCON, "begin", $resultmode))){
-			@TXT_LOG("dberr", $_SERVER['SCRIPT_NAME'], basename(__FILE__),__LINE__, "\terrno:[".mysqli_errno($DBCON)."]", "err:[".mysqli_error($DBCON)."]" );
+		else if(!(@mysqli_query($this->db, "begin", $resultmode))){
+			@TXT_LOG("dberr", $_SERVER['SCRIPT_NAME'], basename(__FILE__),__LINE__, "\terrno:[".mysqli_errno($this->db)."]", "err:[".mysqli_error($this->db)."]" );
 			$status = "failed";
 			$message = "ERROR" ;
 			$description = "QUERY EXEC ERROR" ;
@@ -122,21 +121,21 @@ class Dbi
 						if($logging) @TXT_LOG("db", $_SERVER['SCRIPT_NAME'], basename(__FILE__),__LINE__, "__SQL_Exec__", $query[$i] );
 						$res[$i]["error"] = 0;
 						$sqllog .= $query[$i]."\n";
-						$result = @mysqli_query($DBCON, $query[$i], $resultmode);
-						if($result === false && (mysqli_errno($DBCON)!=0 || mysqli_error($DBCON)!="")){
+						$result = @mysqli_query($this->db, $query[$i], $resultmode);
+						if($result === false && (mysqli_errno($this->db)!=0 || mysqli_error($this->db)!="")){
 							// エラーロギング
 							$res[$i]["error"] = 1;
 							$status = "failed";
 							$message = "ERROR" ;
 							$description = "QUERY EXEC ERROR" ;
 							if(function_exists("TXT_LOG")){
-								TXT_LOG("dberr", $_SERVER['SCRIPT_NAME'], basename(__FILE__),__LINE__, "__SQL_Exec__ ", $query[$i]."\terrno:[".mysqli_errno($DBCON)."]", "err:[".mysqli_error($DBCON)."]" );
+								TXT_LOG("dberr", $_SERVER['SCRIPT_NAME'], basename(__FILE__),__LINE__, "__SQL_Exec__ ", $query[$i]."\terrno:[".mysqli_errno($this->db)."]", "err:[".mysqli_error($this->db)."]" );
 							}
 							break;
 						}
 						else {
-							$res[$i]["count"]     = @mysqli_affected_rows($DBCON);
-							$res[$i]["insert_id"] = @mysqli_insert_id($DBCON);
+							$res[$i]["count"]     = @mysqli_affected_rows($this->db);
+							$res[$i]["insert_id"] = @mysqli_insert_id($this->db);
 							$_SESSION['sInsertId'] = $res[$i]["insert_id"];
 						}
 					}
@@ -145,7 +144,7 @@ class Dbi
 					if($logging) @TXT_LOG("db", $_SERVER['SCRIPT_NAME'], basename(__FILE__),__LINE__, "__SQL_Exec__", $query );
 					if(!empty($query)){
 						$sqllog .= $query."\n";
-						$result = @mysqli_query($DBCON, $query, $resultmode);
+						$result = @mysqli_query($this->db, $query, $resultmode);
 						$res[0] = array();
 						$res[0]["error"] = 0;
 						if($result === false){
@@ -154,11 +153,11 @@ class Dbi
 							$status = "failed";
 							$message = "ERROR" ;
 							$description = "QUERY EXEC ERROR" ;
-							@TXT_LOG("dberr", $_SERVER['SCRIPT_NAME'], basename(__FILE__),__LINE__, $query."\terrno:[".mysqli_errno($DBCON)."]", "err:[".mysqli_error($DBCON)."]" );
+							@TXT_LOG("dberr", $_SERVER['SCRIPT_NAME'], basename(__FILE__),__LINE__, $query."\terrno:[".mysqli_errno($this->db)."]", "err:[".mysqli_error($this->db)."]" );
 						}
 						else {
-							$res[0]["count"]     = @mysqli_affected_rows($DBCON);
-							$res[0]["insert_id"] = @mysqli_insert_id($DBCON);
+							$res[0]["count"]     = @mysqli_affected_rows($this->db);
+							$res[0]["insert_id"] = @mysqli_insert_id($this->db);
 							$_SESSION['sInsertId'] = $res[0]["insert_id"];
 						}
 					}
@@ -174,16 +173,16 @@ class Dbi
 			}
 		}
 		if($status === "success"){
-			if(!(@mysqli_query($DBCON, "commit", $resultmode))){
-				@TXT_LOG("dberr", $_SERVER['SCRIPT_NAME'], basename(__FILE__),__LINE__, "\terrno:[".mysqli_errno($DBCON)."]", "err:[".mysqli_error($DBCON)."]" );
+			if(!(@mysqli_query($this->db, "commit", $resultmode))){
+				@TXT_LOG("dberr", $_SERVER['SCRIPT_NAME'], basename(__FILE__),__LINE__, "\terrno:[".mysqli_errno($this->db)."]", "err:[".mysqli_error($this->db)."]" );
 				$status = "failed";
 				$message = "ERROR" ;
 				$description = "QUERY EXEC COMMIT ERROR" ;
 			}
 		}
 		else {
-			if(!(@mysqli_query($DBCON, "rollback", $resultmode))){
-				@TXT_LOG("dberr", $_SERVER['SCRIPT_NAME'], basename(__FILE__),__LINE__, "\terrno:[".mysqli_errno($DBCON)."]", "err:[".mysqli_error($DBCON)."]" );
+			if(!(@mysqli_query($this->db, "rollback", $resultmode))){
+				@TXT_LOG("dberr", $_SERVER['SCRIPT_NAME'], basename(__FILE__),__LINE__, "\terrno:[".mysqli_errno($this->db)."]", "err:[".mysqli_error($this->db)."]" );
 				$status = "failed";
 				$message = "ERROR" ;
 				$description = "QUERY EXEC COMMIT ERROR" ;
