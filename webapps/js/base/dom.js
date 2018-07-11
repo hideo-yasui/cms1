@@ -97,27 +97,6 @@
 					$('*[name="'+target+'"]').on("change", function(e){ selectFormLoad(formId, $(self) , selectValue, template, param ); });
 				}
 				break;
-				case "m_tree":
-					console.error("selectFormLoad : m_tree ");
-/*
-				//ツリーメニューからデータ取得
-				var data = _treeView.treeview("getNodeList");
-				form = getOptionString(name, data, "NODE", "NAME", template, required);
-				var current = _treeView.treeview("currentNodekey");
-				if(!util.isEmpty(current)) val = data[current]["NODE"];
-				break;
-*/
-			case "listtable":
-				console.error("selectFormLoad : listtable ");
-/*
-				//リストからデータ取得
-				if(alt && alt!="" && target && target!=""){
-					var data = _listTable["listTable"].listtable("getData", null, [target, alt]);
-					form = getOptionString(name, data, target, alt, template, required);
-				}
-				if(required && data.length > 0 && data[0][target]) val = data[0][target];
-*/
-				break;
 			case "m_group":
 				//汎用コード（グループ）からデータ取得
 				var _group = service.getGroupData();
@@ -139,8 +118,10 @@
 				else group=$(self).attr("name");
 				if(group && group!="") {
 					var _groupData = service.getCodeData(group);
-					form = getOptionString(name, _groupData, 0, 1, template, required);
-					val = _groupData[0][0];
+					if(_groupData != null){
+						form = getOptionString(name, _groupData, 0, 1, template, required);
+						val = _groupData[0][0];
+					}
 				}
 				break;
 				case "year":

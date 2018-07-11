@@ -452,13 +452,13 @@
 	* @param body {String}
 	* @return {void} return nothing
 	*/
-	function _showValidateError(selecter, body){
+	function _showValidateError(selecter, error_message){
 		var field = $(selecter).attr("name");
 		var tag = $(selecter).prop("tagName");
-		var _errTemplate = '<div class="form__error" id="error'+field+'"><span class="form__required">#message#</span></div>';
+		var _errTemplate = '<div class="row m-2 error_message" id="error'+field+'"><p class="small text-danger">#message#</p></div>';
 		if($("#error"+field).length) return;
-		var message = _errTemplate.replace("#message#", body);
-		$("dd:has("+tag+"[name="+field+"]):last").append(message);
+		var message = _errTemplate.replace("#message#", error_message);
+		$(selecter).parent().parent().append(message);
 	}
 	/**
 	* 対象フォームのエラーメッセージブロックをすべて除去する
@@ -468,7 +468,7 @@
 	* @return {void} return nothing
 	*/
 	function clearValidateError(formId){
-		$(".form__error", $("#"+formId)).remove();
+		$(".error_message", $("#"+formId)).remove();
 	}
 
 	/**

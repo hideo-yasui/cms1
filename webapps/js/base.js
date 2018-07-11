@@ -1261,8 +1261,7 @@
 						_listTable[id].listtable({
 							"data" : data,
 							"header" : option["header"],
-							"styleName" : "list--user",
-							"tableStyleName" : "list--user__tablet",
+							"tableStyleName" : "table table-bordered table-striped table-responsive",
 							"zeroPaddingSize" : 3,
 							"maxPageSize" : _cache["userSetting"]["maxPageSize"],
 							"sortField" : "",
@@ -1277,8 +1276,7 @@
 						_listTable[id] = $("#"+id).listtable({
 							"data" : data,
 							"header" : option["header"],
-							"styleName" : "list--user",
-							"tableStyleName" : "list--user__tablet",
+							"tableStyleName" : "table table-bordered table-striped table-responsive",
 							"zeroPaddingSize" : 3,
 							"maxPageSize" : _cache["userSetting"]["maxPageSize"],
 							"sortField" : "",

@@ -16,7 +16,7 @@ class comService extends Controller
 	public function query($params){
 		$result = $this->badRequestResponce();
 		if(isset($params['query_code'])){
-			if (!empty($params["method"])) $params['query_code'] .= $params['method'];
+			if (!empty($params["method"])) $params['query_code'] .= '_'.$params['method'];
 			if ($this->request->isGet()) {
 				$params = array_merge($params, $_GET);
 			}
@@ -175,18 +175,24 @@ class comService extends Controller
 	public function exitProc(){
 		exitProc($this->application->dbi->db);
 	}
+	public function auth($params){
+		if ($this->request->isGet()) {
+			return $this->_auth_token();
+		}
+		else if ($this->request->isPost()) {
+			return $this->_auth($_POST);
+		}
+	}
 	/**
 	 * ログイン認証を行い認証結果を返却する
-	 * @param dbconnect $DBCON
 	 **/
-	public function auth($params){
+	private function _auth($params){
 		$status = "success";
 		$description = "";
 		$message = "";
+		$data = "";
+		$token = "";
 
-		// get user
-		$this->application->dbi->addConfigLog("auth", "login start", $params["login_id"]);
-		$user = null;
 		if(!isset($params["login_id"]) && isset($params["user_id"])){
 			//login_idをuser_idで補完
 			$params["login_id"] = $params["user_id"];
@@ -205,42 +211,42 @@ class comService extends Controller
 				'login_id'  => $params["login_id"],
 				'password' => $params["password"]
 			));
+			if(!isset($user) || $user["status"] !== "success"){
+				$status = "failed";
+				$message = "E_BAD_REQUEST";
+				$description = "paramater error:".$user["status"];
+			}
+			else if(count($user["data"]) !== 1) {
+				$status = "failed";
+				$message = "E_AUTH_NOT_FOUND";
+				$description = "";
+			}
 		}
-		if(!isset($user) || $user["status"] !== "success"){
-			$status = "failed";
-			$message = "E_BAD_REQUEST";
-			$description = "paramater error:".$user["status"];
-		}
-		else if(count($user["data"]) !== 1) {
-			$status = "failed";
-			$message = "E_EXIST_NODATA";
-			$description = "";
-		}
-
 		if($status === "success") {
-			$user_id = $user["data"][0]["user_id"];
-			$auth_id = $user["data"][0]["auth_id"];
-			$token = $this->get_token($user_id);
+			$data = $user["data"][0];
+			$auth_id = $data["auth_id"];
+			$token = $this->get_token($auth_id);
 			$result = $this->application->dbi->execConfigQuery("user_token_update", array(
 				'log_type' => 'login',
-				'token' => $token,
-				'auth_id' => $auth_id,
-				'user_id' => $user_id
+				'new_token' => $token,
+				'auth_id' => $auth_id
 			));
 			if ($result["status"] !== "success") {
 				$status = "failed";
 				$message = "ERROR";
+				$token = "";
 			}
 			else {
-				$this->application->dbi->addConfigLog("auth", "login end", "token=[$token] / user[$user_id]");
 				session_regenerate_id(true) ;
-				$_SESSION["user_token"] = $token;
-				$_SESSION["user_id"] = $user_id;
+				$_SESSION["access_time"] = time();
+				$_SESSION["auth_token"] = $token;
 			}
 		}
 		$result = array(
 			'status'      => $status,
 			'message'     => $message,
+			'token'     => $token,
+			'data' => $data,
 			'description' => $description
 		);
 		return $result;
@@ -260,66 +266,83 @@ class comService extends Controller
 	 * 認証処理
 	 * @return Array
 	 */
-	public function auth_token() {
+	public function _auth_token() {
+		$http_header = getallheaders();
+		$token = "";
+		if(isset($http_header["api_token"])){
+			$token = $http_header["api_token"];
+		}
+		if(empty($token) && isset($_SESSION["auth_token"])){
+			$token = $_SESSION["auth_token"];
+		}
 		$response = array(
 			'status'      => "success",
 			'message'     => "",
 			'description' => ""
 		);
-		$auth_check_time = 300;
+		$auth_check_time = 1;
 		$diff_time = $auth_check_time+1;
-		if(!empty($_SESSION["sAccessTime"])) $diff_time    = (time() - $_SESSION["sAccessTime"]);
+		if(!empty($_SESSION["access_time"])) $diff_time = (time() - $_SESSION["access_time"]);
 		if ($diff_time < $auth_check_time) {
-			return $response;
+			return $this->getResponce();
 		}
 		// validate
-		if (!isset($_SESSION["user_token"])) {
-			$response = array(
-			'status'      => "failed",
-			'message'     => "E_AUTH_FAIL",
-			'description' => "undefined index: required"
-			);
-			return $response;
+		if (empty($token)) {
+			return $this->badRequestResponce();
 		}
-		$result = $this->application->dbi->execConfigQuery("login_by_token", array(
-			'token' => $_SESSION["user_token"]
+
+		$user = $this->application->dbi->execConfigQuery("login_by_token", array(
+			'token' => $token
 		));
-		if ($result["status"] !== "success" || count($result["data"]) === 0) {
-			$response = array(
-				'status'      => "failed",
-				'message'     => "E_AUTH_FAIL",
-				'description' => ""
-			);
-			return $response;
+		if ($user["status"] !== "success" || count($user["data"]) === 0) {
+			return $this->notFoundResponce();
 		}
-		$this->application->dbi->addConfigLog("auth", "authenticate start", 'token=['.$_SESSION["user_token"].'],'.'user_id=['.$result["data"][0]["user_id"].']');
+		$auth_id = $user["data"][0]["auth_id"];
+		$result = $this->application->dbi->execConfigQuery("user_token_update", array(
+			'log_type' => 'auth_token',
+			'auth_id' => $auth_id
+		));
+		if ($result["status"] !== "success") {
+			return $this->errorResponce();
+		}
+		if (count($result["data"]) === 0) {
+			return $this->notFoundResponce();
+		}
+
 		// Authenticate sceess
-		$_SESSION["sAccessTime"] = time(); // 最後にアクセスした時間をセット（タイムアウトに使用する）
-		return $response;
+		$_SESSION["access_time"] = time(); // 最後にアクセスした時間をセット（タイムアウトに使用する）
+		$result["data"] = $user["data"][0];
+		return $result;
 	}
 
 	public function auth_clear(){
-
-		$result = $this->application->dbi->execConfigQuery("login_by_token", array(
-			'token' => $_SESSION["user_token"]
-		));
-		if ($result["status"] !== "success" || count($result["data"]) === 0) {
-			$response = array(
-				'status'      => "failed",
-				'message'     => "E_AUTH_FAIL",
-				'description' => ""
-			);
-			return $response;
+		$http_header = getallheaders();
+		$token = "";
+		if(isset($http_header["api_token"])){
+			$token = $http_header["api_token"];
 		}
-		$user_id = $result["data"][0]["user_id"];
-		$auth_id = $result["data"][0]["auth_id"];
-		$result = $this->application->dbi->execConfigQuery("user_token_update", array(
-			'log_type' => 'logout',
-			'token' => '',
-			'auth_id' => $auth_id,
-			'user_id' => $user_id
+		if(empty($token) && isset($_SESSION["auth_token"])){
+			$token = $_SESSION["auth_token"];
+		}
+		$user = $this->application->dbi->execConfigQuery("login_by_token", array(
+			'token' => $token
 		));
+		if ($user["status"] !== "success" || count($user["data"]) === 0) {
+			return $this->notFoundResponce();
+		}
+		$auth_id = $user["data"][0]["auth_id"];
 
+		$result = $this->application->dbi->execConfigQuery("user_token_update", array(
+			'log_type' => 'auth_clear',
+			'new_token' => '-',
+			'auth_id' => $auth_id
+		));
+		if ($result["status"] !== "success") {
+			return $this->errorResponce();
+		}
+		if ($result["data"]["result"][0]["count"] === 0) {
+			return $this->notFoundResponce();
+		}
 		session_cache_limiter("nocache");
 		session_cache_expire (0);
 		session_regenerate_id( true ) ;
@@ -327,11 +350,10 @@ class comService extends Controller
 		$_SESSION = array() ;
 		$sesName = session_name() ;
 		if ( isset( $_COOKIE[$sesName] ) ) {
-			$setExpTime = ( time() - ( 60 * 60 * 24 * 365 ) ) ; // 有効期限を１年前にセット
+			$setExpTime = ( time() - ( 3600 * 24 * 365 ) ) ;
 			setcookie( $sesName, "", $setExpTime, "/" ) ;
 		}
 		session_destroy();
 		return $this->getResponce();
 	}
-
 }

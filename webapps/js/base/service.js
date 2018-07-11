@@ -93,8 +93,10 @@
     * @return {void} return nothing
     */
 	function loadClose (){
+		/*
 		if(util.isEmpty(_loading)) return;
 		_loading.dialog("close");
+		*/
 	}
 	/**
 	* ローディングダイアログを表示する
@@ -103,6 +105,7 @@
     * @return {void} return nothing
     */
 	function loadOpen (){
+		/*
 		if(util.isEmpty(_loading)) {
 			if($("#loading")[0] && _loading==null){
 				_loading = $("#loading").dialog({
@@ -122,6 +125,7 @@
 			}
 		}
 		_loading.dialog("open");
+		*/
 	}
 
 	/**
@@ -376,6 +380,9 @@
     */
 	function getAjax(async,url, request, success, error, cacheReset){
 		var _request = requestDataParse(request);
+		var auth = util.getLocalData("auth");
+		var token = "";
+		if(auth!=null && auth["token"]) token = auth["token"];
 		var key = url+JSON.stringify(_request);
 		var now = +new Date();
 		var passtime = _cache["userSetting"]["requestCacheTime"];
@@ -401,7 +408,10 @@
 		loadStart();
 		//console.log("ajax exec:"+key);
 		var ret = $.ajax({
-			headers: {'X-Requested-With': 'XMLHttpRequest'},
+			headers: {
+				'X-Requested-With': 'XMLHttpRequest',
+				'api_token' : token
+			},
 			type: "GET",
 			async: async,
 			cache: false,
@@ -442,11 +452,16 @@
 	* @param error {Function}  エラー時コールバック関数
     * @return {Object} defferd
     */
-		function postAjax(url, request, success, error){
+	function postAjax(url, request, success, error){
+		var auth = util.getLocalData("auth");
+		var token = "";
+		if(auth!=null && auth["token"]) token = auth["token"];
 		loadStart();
-		//console.log("ajax exec:"+url);
 		var ret = $.ajax({
-			headers: {'X-Requested-With': 'XMLHttpRequest'},
+			headers: {
+				'X-Requested-With': 'XMLHttpRequest',
+				'api_token' : token
+			},
 			type: "POST",
 			cache: false,
 			dataType: "JSON",

@@ -113,7 +113,7 @@ class comView extends comService
 			}
 			if(isset($option["autologin"]) && !empty($option["autologin"]) ){
 				//自動ログイン、autologinにログイン後の遷移先を設定する
-				$values = $this->auth_token();
+				$values = $this->_auth_token();
 				if($values["status"] ==="success") {
 					header( "Location: /".$option["autologin"] ) ;
 					$this->exitProc();
@@ -122,7 +122,7 @@ class comView extends comService
 
 			if(!isset($option["auth"]) || empty($option["auth"]) || $option["auth"]!="false"){
 				//デフォルトで認証が必要、auth=falseの場合のみ認証を無視できる
-				$values = $this->auth_token();
+				$values = $this->_auth_token();
 				if($values["status"] !=="success") {
 					if($values["message"] === "E_AUTH_TIMEOUT"){
 						$this->showPageSessionTimeout();

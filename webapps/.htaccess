@@ -1,4 +1,5 @@
 RewriteEngine on
+RewriteCond %{REQUEST_URI} !(^/dist/)
 RewriteCond %{REQUEST_URI} !(^/js/)
 RewriteCond %{REQUEST_URI} !(^/css/)
 RewriteCond %{REQUEST_URI} !(^/images/)
