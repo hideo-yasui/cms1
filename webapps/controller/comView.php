@@ -72,7 +72,7 @@ class comView extends comService
 			'template' => "",
 			'system' => $this->system,
 			'contents' => $page_code,
-			'data' => "",
+			'data' => array(),
 			'status'      => "success",
 			'message'     => "",
 			'description' => ""
@@ -110,6 +110,7 @@ class comView extends comService
 				if(isset($option["template"]) && !empty($option["template"])) $ret["template"] = $option["template"];
 				if(isset($option["contents"]) && !empty($option["contents"])) $ret["contents"] = $option["contents"];
 				if(isset($option["system"]) && !empty($option["system"])) $ret["system"] = $option["system"];
+				$pageData = array_merge ($pageData,$option);
 			}
 			if(isset($option["autologin"]) && !empty($option["autologin"]) ){
 				//自動ログイン、autologinにログイン後の遷移先を設定する
@@ -141,7 +142,9 @@ class comView extends comService
 					$ret["message"] = $values["message"];
 					$ret["description"] = $values["description"];
 					if($values["status"] !="success") break;
-					if(isset($values["data"]) && !empty($values["data"])) $ret["data"][$query[$i]] = $values["data"];
+					if(isset($values["data"]) && !empty($values["data"])){
+						$ret["data"][$query[$i]] = $values["data"];
+					}
 				}
 			}
 

@@ -1,6 +1,6 @@
 
 ;(function($, undefined){
-	
+
 	/*
 		* Constructor
 		*/
@@ -32,19 +32,19 @@
 			lv = lv|0;
 			data = dt[i];
 			var isOpen = false;
-			
+
 			data["child"] = [];
 			data["childCount"] = 0;
 			data["LV"] = lv;
 			data["set"] = false;
-			data["isopen"] = isOpen;	
-			data["key"] = i;	
+			data["isopen"] = isOpen;
+			data["key"] = i;
 			if(data["OPTION_STRING"] && data["OPTION_STRING"]!="" && data["OPTION_STRING"].indexOf(":")>=0){
 				var p = $("<p></p>");
 				p.html(data["OPTION_STRING"]);
 				data["OPTION_STRING"] = JSON.parse("{"+p.html()+"}");
 			}
-			
+
 			this.nodeData[node] = data;
 			if(typeof this.nodeData[pnode]=="object"){
 				this.nodeData[pnode]["child"].push(node);
@@ -129,7 +129,7 @@
 			var ul = $(this).next('.text').next('ul');
 			$('#'+_id+' li').removeClass('current');
 			var style = $(this).parent().attr("class");
-			
+
 			$(this).parent().addClass('current');
 			if (ul.length > 0) {
 				if (ul.css('display') == 'block') {
@@ -166,13 +166,13 @@
 			treeview.dataList[key]["STYLE"] = style;
 		});
 
-		
+
 		$('#'+_id+' li .text').unbind('click')
 		$('#'+_id+' li .text').on('click', function(event){
 			event.preventDefault();
 			treeview._nodeClick($(this).parent(), 0);
 		});
-		
+
 		if (this.options.defaultNode) {
 			if(this.nodeData[this.options.defaultNode]){
 				treeview._nodeClick($('#'+_id+' #__node'+this.nodeData[this.options.defaultNode]["key"]));

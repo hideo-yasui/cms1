@@ -54,6 +54,7 @@
 		treeInit : treeInit,
 		getFileForm : getFileForm,
 		listRefresh : listRefresh,
+		linkProc : linkProc,
 		exportProc : exportProc
 	};
 	startProc();
@@ -745,13 +746,12 @@
 			var buttonForm = option["button"];
 			var permission = util.getLocalData("permission");
 			var button = {
-					"detailsearch" : { "control" : "hidden", "target" : "top", "text" : "詳細", "alt" : "search"},
 					"scansearch" : { "control" : "hidden", "target" : "top", "text" : "ｽｷｬﾝ"},
-					"newadd" : { "control" : "hidden", "target" : "left", "align" : "right_text", "icon" : "copy", "text" : "追加", "alt" : "add"},
-					"setting" : { "control" : "hidden", "target" : "left", "align" : "right_text", "icon" : "setting", "text" : "一括更新"},
-					"refresh" : { "control" : "hidden", "target" : "left", "align" : "right_text", "icon" : "refresh", "text" : "再表示"},
-					"import" : { "control" : "hidden", "target" : "left", "align" : "right_text", "icon" : "import", "text" : "ｲﾝﾎﾟｰﾄ"},
-					"export" : { "control" : "hidden", "target" : "left", "align" : "right_text", "icon" : "export", "text" : "ｴｸｽﾎﾟｰﾄ"},
+					"newadd" : { "control" : "hidden", "target" : "left", "align" : "right_text", "icon" : "plus", "text" : "追加", "alt" : "add"},
+					"setting" : { "control" : "hidden", "target" : "left", "align" : "right_text", "icon" : "cogs", "text" : "一括更新"},
+					"refresh" : { "control" : "hidden", "target" : "left", "align" : "right_text", "icon" : "sync", "text" : "再表示"},
+					"import" : { "control" : "hidden", "target" : "left", "align" : "right_text", "icon" : "upload", "text" : "ｲﾝﾎﾟｰﾄ"},
+					"export" : { "control" : "hidden", "target" : "left", "align" : "right_text", "icon" : "download", "text" : "ｴｸｽﾎﾟｰﾄ"},
 					"rowedit" : { "control" : "enabled"},
 					"rowcopy" : { "control" : "enabled"},
 					"rowdelete" : { "control" : "enabled"}
@@ -766,12 +766,14 @@
 					if(util.isEmpty(control[i])) continue;
 					if(!button[control[i]]) button[control[i]] = {};
 					var _status = "enabled";
+					/*
 					if((control[i] == "pagestart" || control[i] == "pageprev") && _listInfo["page"] == 0){
 						_status = "disabled";
 					}
 					else if((control[i] == "pagenext" || control[i] == "pageend") && _listInfo["page"] >= _listInfo["maxpage"]){
 						_status = "disabled";
 					}
+					*/
 					button[control[i]]["control"] = _status;
 				}
 			}
@@ -788,18 +790,19 @@
 				}
 			}
 
-			$(".buttonmenu", $("main")).empty();
-			$("*[accesskey=search]", $("main")).hide();
-			$("*[accesskey=pagestart]", $("main")).hide();
-			$("*[accesskey=pageprev]", $("main")).hide();
-			$("*[accesskey=pagenext]", $("main")).hide();
-			$("*[accesskey=pageend]", $("main")).hide();
+			$("#buttonmenu", $("#main")).empty();
+			$("*[accesskey=detailsearch]", $("#main")).hide();
+			$("*[accesskey=search]", $("#main")).hide();
+			$("*[accesskey=pagestart]", $("#main")).hide();
+			$("*[accesskey=pageprev]", $("#main")).hide();
+			$("*[accesskey=pagenext]", $("#main")).hide();
+			$("*[accesskey=pageend]", $("#main")).hide();
 			$("input[name='p_search_word']").unbind("keypress");
-
 			var _tpl = [
-				'<a href="javascript:void(0);" #attr# class="btn #class#">',
-				'#icon##text#',
-				'</a>',
+				'<button type="button" #attr# class="btn btn-info btn-sm mr-1">',
+				'<i class="fa fa-#icon# mr-1"></i></i>',
+				'<span class="btn-label">#text#</span>',
+				'</button>',
 			].join('');
 
 			for(var i=0;i<control.length;i++){
@@ -808,27 +811,25 @@
 				//紐づくフォームの表示制御を行うので、a[accesskey...とはしない
 				if(button[key]["control"]=="hidden") continue;
 				var _html = _tpl;
-				var _class = "";
 				var _align = "";
 				var _accesskey = key;
 				var _attr = "";
 				if(!button[key]["accesskey"]) button[key]["accesskey"] = key;
-				if(button[key]["align"]) _align = button[key]["align"];
 				if(button[key]["text"]) _html = _html.replace("#text#", button[key]["text"]);
-				if(button[key]["icon"]) {
-					_class += " icons";
-					_html = _html.replace("#icon#", '<span class="icon '+button[key]["icon"]+'"></span>');
-				}
+				if(button[key]["icon"]) _html = _html.replace("#icon#", button[key]["icon"]);
 
-				if(_listInfo["maxpage"] > 0 && (key=="pagestart" || key=="pageprev" || key=="pagenext" || key=="pageend" || key=="search")){
-					$("*[accesskey="+key+"]", $("main")).css("display", "inline-block");
+				if(_listInfo["maxpage"] > 0 && (
+						key=="pagestart" || key=="pageprev" ||
+						key=="pagenext" || key=="pageend" ||
+						key=="search" || key=="detailsearch")){
+					$("*[accesskey="+key+"]", $("#main")).css("display", "inline-block");
 				}
 				if(key == "search"){
-					$("*[accesskey="+key+"]", $("main")).css("display", "inline-block");
+					$("*[accesskey="+key+"]", $("#main")).css("display", "inline-block");
 					$("input[name='p_search_word']").on("keypress", function(e){
 						if(e.keyCode==13){
 							//検索入力～Enterで、検索ボタン押下
-							$("._buttonmenu a.btn[accesskey=search]").click();
+							$("._buttonmenu button.btn[accesskey=search]").click();
 						}
 					});
 				}
@@ -840,18 +841,15 @@
 
 				if(button[key]["control"]=="disabled"){
 					_attr += ' disabled="disabled"';
-					_class += ' btn--negative';
-					$("*[accesskey="+key+"]", $("main")).prop("disabled", true);
+					$("*[accesskey="+key+"]", $("#main")).prop("disabled", true);
 				}
 				if(button[key]["target"]) {
-					_class += " "+_align;
-					_html = dom.textFormat(_html, {"class" : _class, "text" : "", "icon" : "", "key" : key, "attr" : _attr});
-					$(".buttonmenu."+button[key]["target"], $("main")).append(_html);
+					_html = dom.textFormat(_html, {"text" : "", "icon" : "", "key" : key, "attr" : _attr});
+					$("#buttonmenu", $("#main")).append(_html);
 				}
 			}
-			$(".buttonmenu a.btn", $("main")).unbind('click');
-			$("._buttonmenu a.btn", $("main")).unbind('click');
-			$(".buttonmenu a.btn[accesskey], ._buttonmenu a.btn[accesskey]", $("main")).click(function(e){
+			$("button.btn", $("#main")).unbind('click');
+			$("button.btn[accesskey]", $("#main")).click(function(e){
 				//var type = $("span", this).attr("class").replace("icon ", "");
 				var accesskey = $(this).attr("accesskey");
 				var alt = $(this).attr("alt");
