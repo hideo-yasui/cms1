@@ -8,7 +8,8 @@ class Dbi
 	public $dbname = "config";
 	public $dbuser = "dbadmin";
 	public $dbpass = "admindb";
-	public $dbhost = "192.168.1.111";
+	//public $dbhost = "192.168.1.111";
+	public $dbhost = "192.168.100.20";
 	public $db;
 	public $system;
 

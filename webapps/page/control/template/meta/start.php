@@ -13,6 +13,12 @@
 
 <!-- Ionicons -->
 <link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
+<!-- Bootstrap time Picker -->
+<link rel="stylesheet" href="/js/plugins/timepicker/bootstrap-timepicker.min.css">
+<!-- Select2 -->
+<link rel="stylesheet" href="/js/plugins/select2/select2.min.css">
+<!-- iCheck for checkboxes and radio inputs -->
+<link rel="stylesheet" href="/js/plugins/iCheck/all.css">
 <!-- Theme style -->
 <link rel="stylesheet" href="/dist/css/adminlte.css">
 <!-- Google Font: Source Sans Pro -->
@@ -21,6 +27,16 @@
 <script src="/js/plugins/jquery/jquery.min.js"></script>
 <!-- Bootstrap 4 -->
 <script src="/js/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+<!-- Select2 -->
+<script src="/js/plugins/select2/select2.full.min.js"></script>
+<!-- iCheck 1.0.1 -->
+<script src="/js/plugins/iCheck/icheck.min.js"></script>
+<!-- InputMask -->
+<script src="/js/plugins/input-mask/jquery.inputmask.js"></script>
+<script src="/js/plugins/input-mask/jquery.inputmask.date.extensions.js"></script>
+<script src="/js/plugins/input-mask/jquery.inputmask.extensions.js"></script>
+<!-- bootstrap time picker -->
+<script src="/js/plugins/timepicker/bootstrap-timepicker.min.js"></script>
 <!-- Slimscroll -->
 <script src="/js/plugins/slimScroll/jquery.slimscroll.min.js"></script>
 <!-- FastClick -->
@@ -32,6 +48,7 @@
 <script src="/js/lib/base64.js"></script>
 <script src="/js/lib/inflate.js"></script>
 <script src="/js/lib/deflate.js"></script>
+<script src="/js/lib/timsort.js"></script>
 <script src="/js/base/util.js<?php echo "?v=".$GLOBALS['gEnvList']['version']; ?>"></script>
 <script src="/js/base/treeView.js<?php echo "?v=".$GLOBALS['gEnvList']['version']; ?>"></script>
 <script src="/js/base/listTable.js<?php echo "?v=".$GLOBALS['gEnvList']['version']; ?>"></script>
@@ -39,4 +56,4 @@
 <script src="/js/base/dom.js<?php echo "?v=".$GLOBALS['gEnvList']['version']; ?>"></script>
 <script src="/js/base/service.js<?php echo "?v=".$GLOBALS['gEnvList']['version']; ?>"></script>
 <script src="/js/base/front.js<?php echo "?v=".$GLOBALS['gEnvList']['version']; ?>"></script>
-<script src="/js/base.js<?php echo "?v=".$GLOBALS['gEnvList']['version']; ?>"></script>
+<script src="/js/base/base.js<?php echo "?v=".$GLOBALS['gEnvList']['version']; ?>"></script>

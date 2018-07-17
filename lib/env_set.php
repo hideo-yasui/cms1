@@ -12,39 +12,6 @@ $gEnvList["SLACK_template"]["WARNING"] = array("name" => "WARNING", "icon" => ":
 $gEnvList["SLACK_template"]["ERROR"] = array("name" => "ERROR", "icon" => ":no_entry:");
 
 
-/***********************************************************************************/
-//----------------------------------------------------------------------------------
-// HTTP Proxy Setting
-//----------------------------------------------------------------------------------
-$gEnvList["http_proxy_use"] = 0 ; // 0:使用しない / 1:使用する
-
-if ( $gEnvList["http_proxy_use"] == 1 ) {
-	$proxyInfo = array() ;
-	$proxyInfo["server"] = "xxx.xxx.xxx.xxx" ;
-	$proxyInfo["port"] = "xxxx" ;
-	$proxyInfo["request_fulluri"] = true ;
-	$proxyInfo["user"] = "" ;
-	$proxyInfo["pass"] = "" ;
-
-	$contextOptions = array(
-		"http" => array(
-			"proxy" => "tcp://" . $proxyInfo["server"] . ":" . $proxyInfo["port"],
-			"request_fulluri" => $proxyInfo["request_fulluri"],
-			"proxy_user" => $proxyInfo["user"], // ユーザ名(不要な場合は省略可)
-			"proxy_pass" => $proxyInfo["pass"] // パスワード(不要な場合は省略可)
-		)
-	);
-
-	$gEnvList["http_proxy_param"] = stream_context_create( $contextOptions ) ;
-} else {
-	$gEnvList["http_proxy_param"] = NULL ;
-}
-
-//----------------------------------------------------------------------------------
-// Mysqli拡張で使用する変数群
-//----------------------------------------------------------------------------------
-$gEnvList["mysqli_connect_errorno"] = 0 ;
-$gEnvList["mysqli_connect_errorstr"] = "" ;
 //----------------------------------------------------------------------------------
 //テキストログ出力/DBログ出力を無効にしたい場合に、query_codeを追加する
 $gEnvList["ignorelog_query_code"] = array();

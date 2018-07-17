@@ -11,7 +11,6 @@
 	var _cache = {};
 	var _isDebug = false; //trueの場合、errorMessageで、詳細が表示されるようになる
 	var public_method ={
-		setEditForm : setEditForm,
 		textFormat : textFormat,
 		selectFormLoad : selectFormLoad,
 		getOptionString : getOptionString,
@@ -21,6 +20,9 @@
 		setCalenderForm : setCalenderForm,
 		setNumberForm : setNumberForm,
 		paramPageLoad : paramPageLoad,
+		dialogLoad : dialogLoad,
+		dialogOpen : dialogOpen,
+		dialogClose : dialogClose,
 		confirmMessage : confirmMessage,
 		alertMessage : alertMessage,
 		errorMessage : errorMessage
@@ -95,6 +97,27 @@
 					$('*[name="'+target+'"]').on("change", function(e){ selectFormLoad(formId, $(self) , selectValue, template, param ); });
 				}
 				break;
+				case "m_tree":
+					console.error("selectFormLoad : m_tree ");
+/*
+				//ツリーメニューからデータ取得
+				var data = _treeView.treeview("getNodeList");
+				form = getOptionString(name, data, "NODE", "NAME", template, required);
+				var current = _treeView.treeview("currentNodekey");
+				if(!util.isEmpty(current)) val = data[current]["NODE"];
+				break;
+*/
+			case "listtable":
+				console.error("selectFormLoad : listtable ");
+/*
+				//リストからデータ取得
+				if(alt && alt!="" && target && target!=""){
+					var data = _listTable["listTable"].listtable("getData", null, [target, alt]);
+					form = getOptionString(name, data, target, alt, template, required);
+				}
+				if(required && data.length > 0 && data[0][target]) val = data[0][target];
+*/
+				break;
 			case "m_group":
 				//汎用コード（グループ）からデータ取得
 				var _group = service.getGroupData();
@@ -116,10 +139,8 @@
 				else group=$(self).attr("name");
 				if(group && group!="") {
 					var _groupData = service.getCodeData(group);
-					if(_groupData != null){
-						form = getOptionString(name, _groupData, 0, 1, template, required);
-						val = _groupData[0][0];
-					}
+					form = getOptionString(name, _groupData, 0, 1, template, required);
+					val = _groupData[0][0];
 				}
 				break;
 				case "year":
@@ -173,7 +194,7 @@
 				}
 			}
 		}
-/*
+
 		if(!util.isEmpty(suggest)){
 		  var dialog = $("#"+formId).attr("type");
 		  if(dialog=="dialog"){
@@ -181,10 +202,9 @@
 				dropdownParent: $("[aria-describedby='"+formId+"']")
 			});
 		  }else{
-		  	$(self).select2();
+	    	$(self).select2();
 		  }
 		}
-*/
 	}
 
 	/**
@@ -390,45 +410,41 @@
 	*/
 	function paramPageLoad(fields, buttons, listTable){
 
-		var _tpl = [
-					'<div class="card-body">',
-						'#_rows_#',
-					'</div>',
-					'<div class="card-body">',
-						'#_buttons_#',
-					'</div>'
+		var _tpl = ['<section class="section--basic">',
+						'<div class="section--basic__body">',
+							'#_rows_#',
+						'</div>',
+						'</section>'
 					].join("")
 
 		var _row = [
-			'<div class="row">',
-				'<div class="col-lg-12">',
-					'<div class="form-group">',
-						'#_form_#',
-					'</div>',
-				'</div>',
-			'</div>'
+			'<dl class="form__wrp">',
+			'<dt class="form__dt">#text#',
+			'</dt>',
+			'<dd class="form__dd">',
+			'#_form_#',
+			'</dd>',
+			'</dl>'
 		].join("");
 
-		var _commonform = '<label for="#field#">#text#</label>#_form_#';
+		var _commonform = '<div class="#class#">#_form_#</div>';
 		var _form ={
-			"text" : '<input #attr# class="form-control" />',
-			"textarea" : '<textarea class="textarea col-12" rows=5 #attr#>#default#</textarea>',
-			"select" : '<select class="form-control select2" #attr# style="width:100%;"></select>',
+			"text" : '<input #attr#/>',
+			"textarea" : '<textarea #attr#>#default#</textarea>',
+			"select" : '<div class="form--select__wrp"><select #attr#></select></div>',
 			"radio" : [
-				'<label>',
-				'<input type="radio" class="flat-red" name="#ID#" id="#ID##VAL#" value="#VAL#" #attr# default="#default#">',
-				'#NAME#',
-				'</label>'
+				'<div uitype="radio" #attr# >',
+				'<div class="form--radio">',
+				'<input type="radio" class="form--radio__field" name="#ID#" id="#ID##VAL#" value="#VAL#" #attr# default="#default#">',
+				'<label class="form--radio__title" for="#ID##VAL#">#NAME#</label>',
+				'</div>',
+				'</div>'
 				].join("")
 			,
-			"checkbox" : [
-				'<label>',
-				'<input type="checkbox" class="flat-red" name="#ID#" id="#ID##VAL#" value="#VAL#" #attr# default="#default#">',
-				'#NAME#',
-				'</label>'
-				].join("")
-			,
-			"label" : '<label for="r3" class="" #attr#>#default#</label>',
+			"checkbox" : '<input #attr# class="form--checkbox__field" id="#field#"></input><label class="form--checkbox__title" for="#field#">#default#</label>',
+			"label" : '<span style="word-wrap: break-word;" #attr#>#default#</span>',
+			"description" : '<span style="word-wrap: break-word;" #attr#>#default#</span>',
+			"link" : '<a style="word-wrap: break-word;" #attr#>#default#</a>',
 			"file" : ['<span  id="filename" alt="#field#" accesskey="filename" style="padding-right:8px;"></span>',
 						'<input type="file" id="#field#" #attr# />',
 						'<a id="btnFileReference" href="javascript:void(0);" accesskey="fileopen" alt="#field#" class="btn icons" style="padding:0 12px 0 2px;display:inline-block;font-size:12px;">',
@@ -462,6 +478,19 @@
 						field["style"] = "border:solid 1px #CCC";
 						field["uitype"] = "jpostal";
 						break;
+					case "date" :
+						field["type"] = "text";
+						field["style"] = "border:solid 1px #CCC";
+						field["uitype"] = "datepicker";
+						break;
+					case "number" :
+						field["type"] = "text";
+						field["uitype"] = "spinner";
+						break;
+					case "unktext":
+						field["type"] = "text";
+						field["uitype"] = "unktext";
+						break;
 					case "listcheckbox":
 						field["type"] = "hidden";
 						field["multiple"] = "multiple";
@@ -471,6 +500,8 @@
 				}
 				_type="text";
 			}
+			var _fclass = "form--"+_type;
+			if(!util.isEmpty(field["uitype"]) && field["uitype"]=="spinner") _fclass="";
 
 			field["_type"] = _type;
 			var form = _form[_type];
@@ -481,6 +512,7 @@
 				}
 			}
 			if(util.isEmpty(field["class"])) field["class"] = "";
+			if(util.isEmpty(_fclass)) field["class"] += _fclass;
 
 			if(!util.isEmpty(field["field"])){
 				if(_type=="label" || _type=="link") attr+=' id="'+field["field"]+'"';
@@ -508,6 +540,7 @@
 			}
 			if(field["type"]!="hidden" && field["type"]!="radio") {
 				form = _commonform.replace("#_form_#", form);
+				attr+=' class="form--'+field["_type"]+'__field"';
 				if(field["type"] == "file") {
 					form = form.replace("#class#", 'dragdropupload" style="text-align:center;padding:12px 4px 12px 4px;border-style:dotted;border-width:1px;border-color:#888;');
 				}
@@ -522,11 +555,16 @@
 			row = textFormat(row, field);
 			form = textFormat(form, field);
 			if(!util.isEmpty(field["subtitle"])){
+				var __form = '<label for="" class="form--text__label">'+field["subtitle"];
+				__form +='</label>';
+				form = __form+form;
+
 			}
 			if(field["type"]=="description"){
 				rowDom.push({ "row" : "#_form_#", "form" : [form]});
 			}
 			else if(util.isEmpty(field["text"]) || field["type"]=="hidden"){
+				//textがない、hiddenの場合は前のフォームにお邪魔する
 				if(rowDom.length>0) rowDom[rowDom.length-1]["form"].push(form);
 				else rowDom.push({ "row" : "#_form_#", "form" : [form]});
 			}
@@ -540,28 +578,83 @@
 			rows+=rowDom[i]["row"].replace("#_form_#", form);
 		}
 
-		var _button_tpl = [
-			'<button type="button" class="btn btn-outline-primary mr-2" #attr#>',
-				'<i class="fa fa-#class#"></i>#text#',
-			'</button>'
-		].join('');
-		var _buttonHtml = "";
+		var _buttonHtml = '<div class="form__submit">';
 		for(var i in buttons ){
 			var button = buttons[i];
-			//_buttonHtml += '<a href="javascript:void(0);" class="btn icons" style="padding:0 12px 0 2px;display:inline-block;font-size:12px;"';
-			_attr = "";
+			_buttonHtml += '<a href="javascript:void(0);" class="btn icons" style="padding:0 12px 0 2px;display:inline-block;font-size:12px;"';
 			for(var attr in button){
 				if(attr=="text") continue;
 				if(attr=="class") continue;
 				if(!util.isEmpty(button[attr])){
-					_attr+=' '+attr+'="'+button[attr]+'"';
+					_buttonHtml+=' '+attr+'="'+button[attr]+'"';
 				}
 			}
-			button["attr"] = _attr;
-			_buttonHtml += textFormat(_button_tpl, button);
+			_buttonHtml +='><span class="icon';
+			if(!util.isEmpty(button["class"])){
+				_buttonHtml+=' '+button["class"];
+			}
+			_buttonHtml +='"></span>';
+			if(!util.isEmpty(button["text"])){
+				_buttonHtml+=''+button["text"];
+			}
+			_buttonHtml +='</a>';
 		}
-		var res = textFormat(_tpl, {"_rows_" : rows, "_buttons_" : _buttonHtml});
+		_buttonHtml += '</div>';
+		var res = _tpl.replace("#_rows_#", rows+_buttonHtml);
 		return res;
+	}
+	/**
+	* ダイアログオブジェクトを生成する
+    * @method dialogLoad
+    * @return {void} return nothing
+    */
+	function dialogLoad(){
+		$("div[type=dialog]").each(function(){
+			var id = $(this).attr("id");
+			var width = $(this).attr("width");
+			var draggable = true;
+			var resizable = true;
+			if(id=="loading") return;
+			if(util.isEmpty(width)) width = "756px";
+			if(util.isEmpty( $(this).attr("draggable")) &&  $(this).attr("draggable")=="false") draggable = false;
+			if(util.isEmpty( $(this).attr("resizable")) &&  $(this).attr("resizable")=="false") resizable = false;
+
+			_dialog[id] = $("#"+id).dialog({
+				title : "-",
+				draggable : draggable,
+				resizable : resizable,
+				stack : true,
+				width: width,
+				height: "auto",
+				autoOpen : false,
+				modal : true,
+				open:function(event, ui){
+					var i=0;
+				},
+				zIndex : 2000
+			});
+		});
+
+	};
+	/**
+	* ダイアログを表示する
+    * @method dialogOpen
+	* @param id {String}
+	* @param [title] {String}
+    * @return {void} return nothing
+    */
+	function dialogOpen(id, title){
+		_dialog[id].dialog("open");
+		$(".ui-dialog-title", $("#"+id).parent()).html(title);
+	}
+	/**
+	* ダイアログを閉じる
+    * @method dialogClose
+	* @param id {String}
+    * @return {void} return nothing
+    */
+	function dialogClose(id){
+		_dialog[id].dialog("close");
 	}
 	/**
 	* 件名、内容を元に、確認メッセージを表示
@@ -572,7 +665,7 @@
     * @return {void} return nothing
     */
 	function confirmMessage(title, body, callback){
-		_message(title, body, "confirm",callback);
+		_message(title, body,"/confirm",callback);
 	}
 	/**
 	* セッションタイムアウトエラーを表示する
@@ -590,7 +683,7 @@
 		};
 		_message("システムエラー",
 			_msg,
-			"alert",
+			"/message",
 			callback
 			);
 		//10秒経過で自動ログアウト
@@ -605,7 +698,7 @@
     * @return {void} return nothing
     */
 	function alertMessage(title, body, callback){
-		_message(title, body,"alert",callback);
+		_message(title, body,"/message",callback);
 	}
 	/**
 	* 件名、内容を元に、メッセージを表示
@@ -617,130 +710,32 @@
 	* @param {Function} callback
     * @return {void} return nothing
     */
-	function _message(title, body, type, callback){
-		$("button[accesskey]", $("#message")).hide();
-		switch(type){
-			case "confirm":
-				$("button[accesskey=yes]", $("#message")).show();
-				$("button[accesskey=no]", $("#message")).show();
-				break;
-			case "alert":
-				$("button[accesskey=ok]", $("#message")).show();
-				break;
-			default:
-		}
-		$("button.btn[accesskey]", $("#message")).click(function(e){
-			var alt = $(this).attr("alt");
-			var accesskey = $(this).attr("accesskey");
-			var target = $(this).attr("target");
-			var type = $(this).attr("type");
-			//console.log("accesskey="+accesskey+",alt="+alt+",target="+target);
-			switch(accesskey){
-				case "yes":
-				case "ok":
-					$('#message').modal('hide');
-					if(util.isFunction(_cache["__callback"])) _cache["__callback"]();
-					break;
-				case "no":
-					$('#message').modal('hide');
-					_cache["__callback"] = null;
-					break;
-			}
-			e.preventDefault();
-		});
-		$("#message .modal-body").html(body);
-		$("#message .modal-title").html(title);
-		$('#message').modal('show');
-		_cache["__callback"] = callback;
-	}
-
-
-
-	//引数(json)を登録用のフォームに値をセット
-	function setEditForm(data, form, _isUpdate){
-		$("input[type=text], textarea", $("#"+form)).val("");
-		$("input[type=radio],input[type=checkbox]", $("#"+form)).prop("checked", false);
-		if(data){
-			$("input, textarea, select", $("#"+form)).each(function(){
-				var field = $(this).attr("name");
-				var tag = $(this).prop("tagName");
-				var formControl = $(this).attr("new");
+	function _message(title, body, url, callback){
+		$("#message").load(url, function(e){
+			$("a.btn[accesskey]", $("#message")).unbind('click');
+			$("a.btn[accesskey]", $("#message")).click(function(e){
+				var alt = $(this).attr("alt");
+				var accesskey = $(this).attr("accesskey");
+				var target = $(this).attr("target");
 				var type = $(this).attr("type");
-				var inputtype = $(this).attr("inputtype");
-				if(_isUpdate) formControl = $(this).attr("edit");
-				var isset = true;
-				var val = null;
-				if(type == "checkbox" || type=="radio"){
-					val = $("input[name="+field+"]:checked").val();
-					if(!val && $(this).attr("defaultSelect")){
-							val = $(this).attr("defaultSelect");
-					}
+				//console.log("accesskey="+accesskey+",alt="+alt+",target="+target);
+				switch(accesskey){
+					case "yes":
+						dialogClose("message");
+						if(util.isFunction(_cache["__callback"])) _cache["__callback"]();
+						break;
+					case "no":
+						dialogClose("message");
+						_cache["__callback"] = null;
+						break;
 				}
-
-				if(!util.isEmpty(formControl)){
-					switch(formControl){
-						case "clear":
-							isset=false;
-							break;
-						case "disabled":
-							$(this).attr("disabled", "true");
-							break;
-						case "hidden":
-							$(this).attr("disabled", "true");
-							$("dl:has("+tag+"[name="+field+"])").hide();
-							break;
-					}
-				}
-
-				if(isset && field && field in data) {
-					var p = $("<p></p>");
-					p.html(data[field]);
-					val = p.text();
-				}
-
-				if(val !== null){
-					switch(type){
-						case "radio":
-						case "checkbox":
-							$(this).val([val]).change();
-							break;
-						case "select":
-							$(this).val(val);
-							$(this).change();
-						default:
-							$(this).val(val);
-					}
-				}
-				if(!util.isEmpty(inputtype)){
-					$(this).blur();
-				}
+				e.preventDefault();
 			});
-			$("div, span, td", $("#"+form)).each(function(){
-				var field = $(this).attr("id");
-				var type =  $(this).attr("type");
-
-				if(util.isEmpty(field)) return;
-				if(!(field in data)) return;
-				var val =data[field];
-				if(type=="filesize"){
-					val = util.setFileUnit(val);
-				}
-				if(typeof val === 'string' && val.indexOf("\n")>=0) val = val.replaceAll("\n", "<br>");
-				$(this).html(val);
-			});
-			$("a", $("#"+form)).each(function(){
-				var field = $(this).attr("id");
-				if(field && field in data) {
-					$(this).html(data[field]);
-					var type =  $(this).attr("type");
-					var url = data[field];
-					if(type=="fileid"){
-						url = "/download/"+url;
-					}
-					$(this).attr("href", url);
-				}
-			});
-		}
+			$("#message .detail").html(body);
+			$(".ui-dialog-title", $("#message").parent()).html(title);
+			dialogOpen("message");
+		});
+		_cache["__callback"] = callback;
 	}
 
 

@@ -28,39 +28,30 @@ $(function(){
 });
 </script>
 <div class="card-header">
-	<h3 class="card-title">ログイン</h3>
+	<h3 class="card-title">パスワードをお忘れの方</h3>
 </div>
-<div class="card-body login-card-body">
-	<form id="login_form" action="" method="post" novalidate>
+<div class="card-body">
+	<form action="" method="post">
 		<div class="row mb-3">
 			<div class="input-group">
 				<div class="input-group-prepend">
 					<span class="input-group-text"><i class="fa fa-envelope"></i></span>
 				</div>
-				<input type="email" name="login_id" class="form-control" placeholder="メールアドレス" minlength="3" maxlength="32" inputtype="email" required="true">
+				<input type="email" class="form-control" placeholder="登録メールアドレス">
 			</div>
 		</div>
 		<div class="row mb-3">
-			<div class="input-group">
-				<div class="input-group-prepend">
-					<span class="input-group-text"><i class="fa fa-key"></i></span>
-				</div>
-				<input type="password" name="password" class="form-control" placeholder="パスワード" accesskey="enter" minlength="8" maxlength="32" inputtype="hankaku" required="true">
-			</div>
+			<p class="small text-muted">
+				ご登録されたメールアドレスにパスワード再設定のご案内が送信されます。
+			</p>
 		</div>
-		<div class="row mb-3">
+
+		<div class="row">
 			<!-- /.col -->
-			<button type="submit" class="btn btn-primary btn-block">ログイン</button>
+			<button type="submit" class="btn btn-primary btn-block">送信する</button>
 			<!-- /.col -->
 		</div>
 	</form>
-	<h6 class="my-2">
-		<a href="/forget" class="small">パスワード忘れた方</a>
-	</h6>
-	<hr class="my-3">
-	<p class="my-2">
-		<button type="button" class="btn btn-outline-success btn-block">新規登録する</button>
-	</p>
 </div>
 <!-- /.login-card-body -->
 <!-- login.php end -->
