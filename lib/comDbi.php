@@ -8,12 +8,44 @@ require_once($gPathList["lib"].'dbi.php');
  */
 class comDbi extends Dbi
 {
-	public $config_db = "config";
+	public $config_db = "control";
+	public $system = "";
 
 	protected $hidden_post_paramater = array(
 		"password", "password_confirm", "password_old"
 	);
 
+	public function getSystem(){
+		$result = array();
+		if(!isset($_SESSION["getSystem"])){
+			$host = $_SERVER["SERVER_NAME"];
+			//masterから、ホストによりsystemとconnectを取得
+			$query = 'select * from master.m_system s';
+			$query .= ' inner join master.m_connect c on c.SYSTEM_CODE=s.SYSTEM_CODE';
+			$query .= ' WHERE HOST_NAME ='."'".$host."'";
+			$query .= ' limit 1';
+			$ret = $this->getDatatable($query);
+			if($ret["status"] !== "success" || count($ret["result"])<1){
+				// dupe
+				$status = "failed";
+				$message = "ERROR" ;
+				$description = $query ;
+				@TXT_LOG("err", $_SERVER['SCRIPT_NAME'], basename(__FILE__),__LINE__, "setSystem ".$message, $description) ;
+			}
+			$result = $ret["result"][0];
+			$_SESSION["getSystem"] = $result;
+		}
+		else {
+			$result = $_SESSION["getSystem"];
+		}
+		$this->dbhost = $result["DB_HOST"];
+		$this->dbname = $result["DB_NAME"];
+		$this->dbuser = $result["DB_USER"];
+		$this->dbpass = $result["DB_PASS"];
+		$this->system = $result["SYSTEM_CODE"];
+		$this->dbConnect();
+		return $result;
+	}
 	public function execConfigSearch($query_code, $data=null){
 		$status = "success";
 		$description = "";
@@ -21,16 +53,20 @@ class comDbi extends Dbi
 		$ret = "";
 		$result = "";
 		$wherequery = "";
-		$wherequery = $wherequery." WHERE SEARCH_CODE=".$this->_esn_sq($query_code)." and DELETE_FLAG=0";
+		$wherequery = $wherequery." WHERE CODE=".$this->_esn_sq($query_code)." and DELETE_FLAG=0";
+		/*
 		$wherequery = $wherequery." AND (SYSTEM_CODE=".$this->_esn_sq($this->system);
 		$wherequery = $wherequery." OR 'control' = ".$this->_esn_sq($this->system).")";
+		*/
 		$wherequery = $wherequery." ORDER BY SORT_NO";
+
 		$count = 0;
 		$name = "";
 		$option = "";
 		$type = "page";
 		$logging = true;
 		$query = "SELECT * FROM ".$this->config_db.".m_search ".$wherequery;
+		@TXT_LOG("debug", $_SERVER['SCRIPT_NAME'], basename(__FILE__),__LINE__, "execConfigSearch", $query) ;
 		$ret = $this->getDatatable($query);
 		if($ret["status"] !== "success"){
 			// dupe
@@ -53,16 +89,14 @@ class comDbi extends Dbi
 					$m_query[0][$decodeField[$i]] = $this->queryEscape($m_query[0][$decodeField[$i]], $data);
 				}
 			}
-			$name = $m_query[0]["SEARCH_NAME"];
+			$system = $m_query[0]["SYSTEM_CODE"];
+			$name = $m_query[0]["NAME"];
 			$option = $m_query[0]["OPTION_STRING"];
-			if($m_query[0]["SEARCH_TYPE"]==0){
-				$type = "list";
-			}
 
+			$this->dbChange($system);
 			$countquery = "SELECT COUNT(*) AS COUNT FROM ".$m_query[0]["TABLE_STRING"];
 			$wherequery = " WHERE TRUE ".$m_query[0]["WHERE_STRING"];
 			$countquery = $countquery.$wherequery;
-			//@TXT_LOG("debug", $_SERVER['SCRIPT_NAME'], basename(__FILE__),__LINE__, "execConfigSearch", $countquery) ;
 			@TXT_LOG("db", $_SERVER['SCRIPT_NAME'], basename(__FILE__),__LINE__, "------m_search------".$query_code."-------------") ;
 			$ret = $this->getDatatable($countquery,false);
 			if($ret["status"] !== "success"){
@@ -115,11 +149,12 @@ class comDbi extends Dbi
 		$ret         = "";
 
 		// get $m_query by $query_code
-		$wherequery  = " WHERE QUERY_CODE =" . $this->_esn_sq($query_code);
+		$wherequery  = " WHERE CODE =" . $this->_esn_sq($query_code);
 		$wherequery = $wherequery." AND DELETE_FLAG = 0";
-		$wherequery = $wherequery." AND (PUBLIC_FLAG = 1";
-		$wherequery = $wherequery." OR SYSTEM_CODE =".$this->_esn_sq($this->system);
-		$wherequery = $wherequery." )";
+/*
+		$wherequery = $wherequery." AND SYSTEM_CODE in(".$this->_esn_sq($this->config_db);
+		$wherequery = $wherequery.", ".$this->_esn_sq($this->system).")";
+*/
 		$wherequery = $wherequery." ORDER BY SORT_NO";
 		$query = "SELECT * FROM ".$this->config_db.".m_query ".$wherequery;
 		$ret = $this->getDatatable($query);
@@ -137,20 +172,14 @@ class comDbi extends Dbi
 
 		$exec_query = array();
 		$search_query = "";
+		$system = "";
 		if($status=="success"){
 			// set logging setting
 			$logging = true;
-			/*
-			for($i=0;$i<count($gEnvList["ignorelog_query_code"]);$i++){
-				if($query_code===$gEnvList["ignorelog_query_code"][$i]){
-					$logging = false;
-					break;
-				}
-			}
-			*/
 			for($i=0;$i<count($m_query);$i++){
 				$query = __WEBIO_html($m_query[$i]["QUERY_STRING"]);
-				$type  = $m_query[$i]["QUERY_TYPE"];
+				$type  = $m_query[$i]["TYPE"];
+				if(empty($system)) $system=$m_query[$i]["SYSTEM_CODE"];
 				if(trim($query) == "") continue;
 				if($type==0){
 					$search_query = $query;
@@ -160,6 +189,7 @@ class comDbi extends Dbi
 					$exec_query = array_merge($exec_query, $querys);
 				}
 			}
+			$this->dbChange($system);
 			$search_query = $this->queryEscape($search_query, $data);
 			for($i=0;$i<count($exec_query);$i++){
 				if(empty(trim($exec_query[$i]))) continue;
@@ -194,6 +224,29 @@ class comDbi extends Dbi
 			'status' => ($status),
 			'message' => ($message),
 			'description' => json_encode($description)
+		);
+		return $values;
+	}
+	public function execQuery($query, array $data = null){
+	  // init return values
+		$status      = "success";
+		$message     = "";
+		$description = "";
+		$ret         = "";
+		$query = $this->queryEscape($query, $data);
+		$ret = $this->sqlExec($query);
+		if($ret["status"] !== "success"){
+			$status = "failed";
+			$message = "ERROR" ;
+			$description = isset($ret["status"]) ? "QUERY EXEC ERROR(".$ret["status"].")" : "QUERY EXEC ERROR()";
+			@TXT_LOG("error", $_SERVER['SCRIPT_NAME'], basename(__FILE__),__LINE__, "execConfigQuery_".$message, $description) ;
+			$ret = $ret["result"];
+		}
+		$values = array(
+			'data' => $ret,
+			'status' => $status,
+			'message' => $message,
+			'description' => $description
 		);
 		return $values;
 	}
@@ -303,6 +356,7 @@ class comDbi extends Dbi
 		$sqlp = explode('/', $query);
 		$isIf = 0;
 		$keyName = "";
+		if($data === null) $data = array();
 		for($i=0;$i<count($sqlp);$i++){
 			$param = $sqlp[$i];
 			//@TXT_LOG("debug",$_SERVER['SCRIPT_NAME'], basename(__FILE__),__LINE__, "queryEscape1", "[".$param."][isIf=".$isIf."][chk=".$chk."]");
@@ -316,7 +370,6 @@ class comDbi extends Dbi
 					$chkType = $bindParam[2];
 					$chkVal = $bindParam[3];
 					$val = $this->getParamValue($keyName, $data, 0);
-
 					if(substr($chkVal, 0, 1)=="'" && substr($chkVal, -1, 1)=="'") $chkVal = str_replace("'", "", $chkVal);
 					else if(substr($chkVal, 0, 1)=='"' && substr($chkVal, -1, 1)=='"') $chkVal = str_replace('"', "", $chkVal);
 					if($chkVal=="null" || $chkVal=="NULL") $chkVal="";
@@ -694,19 +747,6 @@ class comDbi extends Dbi
 			'description' => ""
 		);
 		return $result;
-	}
-	private function _esn_sq($str){
-		if ( is_null($str) || ($str === "") ) {
-			return "NULL";
-		}
-		else if ($str === 0 && $numflg) {
-			return "NULL";
-		}
-
-		$str = str_replace(array("\r\n", "\r", "\n"), "<BR>", $str);
-		$str = str_replace("\t", " ", $str);
-
-		return "'".mysqli_real_escape_string($this->db, $str)."'";
 	}
 
 }

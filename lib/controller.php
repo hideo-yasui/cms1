@@ -22,10 +22,9 @@ abstract class Controller
 	{
 		$this->controller_name = strtolower(substr(get_class($this), 0, -10));
 		$this->application = $application;
-		$this->system = $application->system;
 		$this->db = $application->db;
-		$this->request     = new Request();
-
+		$this->system = $application->system_info["SYSTEM_CODE"];
+		$this->request  = new Request();
 	}
 	/**
 	 * アクションを実行

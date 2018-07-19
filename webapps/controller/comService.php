@@ -5,18 +5,28 @@ class comService extends Controller
 	protected $auth_actions = array('');
 
 	public function search($params){
+		$result = $this->application->dbi->load_cache();
+		if($result!==null) return $result;
 		$result = $this->badRequestResponce();
 		if(isset($params['query_code'])){
 			if ($this->request->isGet()) {
 				$result = $this->application->dbi->execConfigSearch($params['query_code'], $_GET);
+				$this->application->dbi->save_cache($result);
 			}
 		}
 		return $result;
 	}
 	public function query($params){
+		TXT_LOG("request", $_SERVER["REQUEST_URI"]);
 		$result = $this->badRequestResponce();
 		if(isset($params['query_code'])){
+			if(isset($params['cache']) && $params['cache']==='use'){
+				$result = $this->application->dbi->load_cache();
+				if($result!==null) return $result;
+			}
+			$path = $params['query_code'];
 			if (!empty($params["method"])) $params['query_code'] .= '_'.$params['method'];
+
 			if ($this->request->isGet()) {
 				$params = array_merge($params, $_GET);
 			}
@@ -24,6 +34,13 @@ class comService extends Controller
 				$params = array_merge($params, $_POST);
 			}
 			$result = $this->application->dbi->execConfigQuery($params['query_code'], $params);
+
+			if(isset($params['cache']) && $params['cache']==='use'){
+				$this->application->dbi->save_cache($result);
+			}
+			if(isset($params['cache']) && $params['cache']==='clear'){
+				$this->application->dbi->clear_cache($path);
+			}
 		}
 		return $result;
 	}
@@ -41,7 +58,7 @@ class comService extends Controller
 				$this->exitProc();
 			}
 		}
-		view("notfound.html", array());
+		header('Location:/notfound');
 		$this->exitProc();
 	}
 	private function _getfile($params, $is_inline){
@@ -280,7 +297,7 @@ class comService extends Controller
 			'message'     => "",
 			'description' => ""
 		);
-		$auth_check_time = 1;
+		$auth_check_time = 300;
 		$diff_time = $auth_check_time+1;
 		if(!empty($_SESSION["access_time"])) $diff_time = (time() - $_SESSION["access_time"]);
 		if ($diff_time < $auth_check_time) {

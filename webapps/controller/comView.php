@@ -181,7 +181,7 @@ class comView extends comService
 			'contents' => $this->system."/template/contents/",
 			'meta' => $this->system."/template/meta/"
 		);
-
+		$data["_system"] = $this->application->system_info;
 		if(isset($values["data"])){
 			$data["config"] = array();
 			for($i=0;$i<count($values["data"]);$i++){

@@ -137,15 +137,11 @@ function STR_StringCheck( $chkstr, $str )
 }
 /* ---------------------------------------------------------------------------------------
  getSecureKey
-
- see: http://www.websec-room.com/2013/03/05/431
 */
 function getSecureKey($length) {
-
   $length_bytes = (intval($length)+1)/2 ; // 生成数が Bytes 単位なので +1 して /2 する
   $bytes = openssl_random_pseudo_bytes( $length_bytes );
   return substr(bin2hex($bytes), 0, $length );
-
 }
 
 /**
@@ -156,6 +152,7 @@ function getSecureKey($length) {
 function createAuthCode($login_id) {
 	return sha1($login_id . COM_getRandomKey(12));
 }
+
 
 // ===========================================================
 // 日本語対応文字列チェック

@@ -1,5 +1,4 @@
 <?php
-$systemdata = $data["data"]["get_systemdata"];
 $treemenu = $data["data"]["get_treemenu"];
 ?>
 <!-- Main Sidebar Container -->
@@ -7,10 +6,10 @@ $treemenu = $data["data"]["get_treemenu"];
 <!-- Brand Logo -->
 <a href="#" class="brand-link">
 	<img src="../../dist/img/AdminLTELogo.png"
-			 alt="<?php echo $systemdata[0]["NAME"]; ?>"
+			 alt="<?php echo $data["_system"]["NAME"]; ?>"
 			 class="brand-image img-circle elevation-3"
 			 style="opacity: .8">
-	<span class="brand-text font-weight-light"><?php echo $systemdata[0]["NAME"]; ?></span>
+	<span class="brand-text font-weight-light"><?php echo $data["_system"]["NAME"]; ?></span>
 </a>
 <!-- Sidebar -->
 <div class="sidebar">

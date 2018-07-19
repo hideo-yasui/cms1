@@ -4,7 +4,7 @@
 <body class="hold-transition login-page">
 <div class="login-box">
 	<div class="login-logo">
-	<a href="./"><b>#service.name#</b></a>
+	<a href="./"><b><?php echo $data["_system"]["NAME"]; ?></b></a>
 	</div>
 	<!-- /.login-logo -->
 	<div class="card">

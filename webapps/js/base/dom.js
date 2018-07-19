@@ -9,7 +9,7 @@
 	"use strict";
 	var _dialog = {};
 	var _cache = {};
-	var _isDebug = false; //trueの場合、errorMessageで、詳細が表示されるようになる
+	var _isDebug = true; //trueの場合、errorMessageで、詳細が表示されるようになる
 	var public_method ={
 		setEditForm : setEditForm,
 		textFormat : textFormat,
@@ -67,11 +67,14 @@
 				var query = $(self).attr("query");
 				var code_field = $(self).attr("code_field");
 				var name_field = $(self).attr("name_field");
-				var _req = front.getFormValue(formId);
-				for(var key in _req){
-					if(util.isEmpty(_req[key]) && !util.isEmpty(param) && !util.isEmpty(param[key])){
-						_req[key] = param[key];
-					}
+				var param_field = $(self).attr("param_field");
+				var data = front.getFormValue(formId);
+				var _req = {};
+				if(data["PID"] && !util.isEmpty(data["PID"])) _req["PID"] = data["PID"];
+				if(param["PID"] && !util.isEmpty(param["PID"])) _req["PID"] = param["PID"];
+				if(!util.isEmpty(param_field)){
+					if(data[param_field] && !util.isEmpty(data[param_field])) _req[param_field] = data[param_field];
+					if(param[param_field] && !util.isEmpty(param[param_field])) _req[param_field] = param[param_field];
 				}
 				//フォーム作成後に値をセットするため、同期取得する
 				service.getAjax(false, "/get/"+query, _req,
@@ -428,7 +431,7 @@
 				'</label>'
 				].join("")
 			,
-			"label" : '<label for="r3" class="" #attr#>#default#</label>',
+			"label" : '<h5 for="l3" class="ml3 lbl" #attr#>#default#</h5>',
 			"file" : ['<span  id="filename" alt="#field#" accesskey="filename" style="padding-right:8px;"></span>',
 						'<input type="file" id="#field#" #attr# />',
 						'<a id="btnFileReference" href="javascript:void(0);" accesskey="fileopen" alt="#field#" class="btn icons" style="padding:0 12px 0 2px;display:inline-block;font-size:12px;">',
@@ -438,13 +441,13 @@
 							'<span class="icon clean" style="margin:10px;"></span>クリア',
 						'</a>'].join("")
 		};
-		var _requiredText = '<span class="form__required">*</span>';
+		var _requiredText = '<span class="right badge badge-danger ml-1">必須</span>';
 		//存在する場合のみ追加する属性
 		var _attr = ["target", "alt", "accesskey",
 					"name", "type","placeholder","multiple",
 					"style","uitype","inputtype","value",
 					"maxlength","minlength","maxvalue","minvalue","stepvalue","defaultDate", "defaultSelect",
-					"query", "code_field", "name_field",
+					"query", "code_field", "name_field", "param_field",
 					"scan", "scan_field", "scaned",
 					"query_check", "query_check_nodata", "query_check_error",
 					"equal", "equalerror", "greater", "greatererror", "less", "lesserror"];
@@ -492,12 +495,6 @@
 			}
 			if(form.indexOf("#default#")>=0) form = form.replace("#default#", "");
 
-			if(!util.isEmpty(field["required"])){
-				//項目見出しに必須の表示をつける
-				//フォームが複数ある場合は、最初フォーム設定の有無にて決定する
-				row = row.replace('#text#', '#text#'+_requiredText);
-				attr+=' required="'+field["required"]+'"';
-			}
 			if(!util.isEmpty(field["edittype"])) {
 				if(!util.isEmpty(field["edittype"]["new"])) {
 					attr+=' new="'+field["edittype"]["new"]+'"';
@@ -508,14 +505,15 @@
 			}
 			if(field["type"]!="hidden" && field["type"]!="radio") {
 				form = _commonform.replace("#_form_#", form);
+				if(!util.isEmpty(field["required"])){
+					//項目見出しに必須の表示をつける
+					//フォームが複数ある場合は、最初フォーム設定の有無にて決定する
+					form = form.replace('#text#', '#text#'+_requiredText);
+					attr+=' required="'+field["required"]+'"';
+				}
 				if(field["type"] == "file") {
 					form = form.replace("#class#", 'dragdropupload" style="text-align:center;padding:12px 4px 12px 4px;border-style:dotted;border-width:1px;border-color:#888;');
 				}
-			}
-
-			if(!util.isEmpty(field["suggest"])) {
-				attr+=' suggest = true';
-				attr+=' id="'+field["suggest"]+'"';
 			}
 
 			field["attr"] = attr;
@@ -587,14 +585,16 @@
 		if(_isDebug) {
 			msg = msg.replaceAll("\n", "<br>");
 			_msg+=+"<br>"+msg
-		};
+		}
 		_message("システムエラー",
 			_msg,
 			"alert",
 			callback
 			);
-		//10秒経過で自動ログアウト
-		setTimeout(callback,  10000);
+		if(!_isDebug) {
+			//10秒経過で自動ログアウト
+			setTimeout(callback,  10000);
+		}
 	}
 	/**
 	* 件名、内容を元に、メッセージを表示
@@ -715,7 +715,7 @@
 					$(this).blur();
 				}
 			});
-			$("div, span, td", $("#"+form)).each(function(){
+			$("div, span, td, .lbl", $("#"+form)).each(function(){
 				var field = $(this).attr("id");
 				var type =  $(this).attr("type");
 

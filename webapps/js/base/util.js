@@ -275,7 +275,7 @@
 			return true;
 		},
 		/**
-		* メール形式チェック
+		* 日付形式チェック
 		* @method isDate
 		* @param val {String}
 		* @param [delimita] {String}
@@ -866,6 +866,9 @@
 			var ret = "";
 			var ishash = false;
 			for(var key in data){
+				if(key==="DELETE_FLAG") continue;
+				if(key==="ADD_TIME") continue;
+				if(key==="UPD_TIME") continue;
 				if(this.isEmpty(data[key])) continue;
 				if(this.isFunction(data[key])) continue;
 				if($.isArray(data[key])) continue;
@@ -905,7 +908,6 @@
 })(this);
 
 String.prototype.replaceAll = function (org, dest){
-	if(!dest || !org) return org;
 	return this.split(org).join(dest);
 };
 //console.log対応していない場合のエラー回避

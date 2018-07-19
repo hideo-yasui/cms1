@@ -5,13 +5,12 @@
  */
 class Dbi
 {
-	public $dbname = "config";
+	public $dbname = "master";
 	public $dbuser = "dbadmin";
 	public $dbpass = "admindb";
 	//public $dbhost = "192.168.1.111";
 	public $dbhost = "192.168.100.20";
 	public $db;
-	public $system;
 
 	/**
 	 * コンストラクタ
@@ -20,29 +19,40 @@ class Dbi
 	 */
 	public function __construct()
 	{
-		$this->system = $GLOBALS['gEnvList']['system'];
 		$this->dbConnect();
 	}
 	/**
 	 * アプリケーションの設定
 	 */
-	protected function dbConnect()
+	public function dbConnect()
 	{
 		$DB_PORT = "" ; // default:5432
 		$persistent = ""; //持続的接続をする場合 p:を設定する
-		$gEnvList = $GLOBALS['gEnvList'];
 
 		$this->db = mysqli_init();
 		$this->db->options(MYSQLI_OPT_INT_AND_FLOAT_NATIVE, 1);
 		$this->db->real_connect($persistent.$this->dbhost, $this->dbuser, $this->dbpass, $this->dbname, intval($DB_PORT));
-
 		if ( $this->db ) {
 			mysqli_set_charset($this->db , "utf8") ;
 		}
 		else {
-			@TXT_LOG("dberr", $_SERVER['SCRIPT_NAME'], basename(__FILE__),__LINE__, "mysqli_connect",  $gEnvList["DB_host"], $gEnvList["DB_user"], "xxxx", $gEnvList["DB_name"], intval($DB_PORT) );
+			@TXT_LOG("dberr", $_SERVER['SCRIPT_NAME'], basename(__FILE__),__LINE__, "mysqli_connect",  $persistent.$this->dbhost, $this->dbuser, $this->dbpass, $this->dbname, intval($DB_PORT));
 			return false;
 		}
+		@TXT_LOG("db", $_SERVER['SCRIPT_NAME'], basename(__FILE__),__LINE__, "mysqli_connect",  $persistent.$this->dbhost, $this->dbuser, $this->dbpass, $this->dbname, intval($DB_PORT));
+	}
+	public function dbChange($schema)
+	{
+		if(empty($schema)) return true;
+		if($this->dbname===$schema) return true;
+
+		if(!mysqli_select_db($this->db,$schema)){
+			@TXT_LOG("dberr", $_SERVER['SCRIPT_NAME'], basename(__FILE__),__LINE__, "dbChange[".$schema."]:errno:[".mysqli_errno($this->db)."]", "err:[".mysqli_error($this->db)."]" );
+			return false;
+		}
+		@TXT_LOG("db", $_SERVER['SCRIPT_NAME'], basename(__FILE__),__LINE__, "dbChange",  $schema);
+		$this->dbname = $schema;
+		return true;
 	}
 	public function getDatatable($query, $logging=false){
 		$status = "success";
@@ -137,7 +147,6 @@ class Dbi
 						else {
 							$res[$i]["count"]     = @mysqli_affected_rows($this->db);
 							$res[$i]["insert_id"] = @mysqli_insert_id($this->db);
-							$_SESSION['sInsertId'] = $res[$i]["insert_id"];
 						}
 					}
 				}
@@ -198,5 +207,69 @@ class Dbi
 		);
 		return $result_all;
 	}
+	public function load_cache(){
+		global $gPathList;
+		$path = $this->get_request_cache_name();
+		$path = $gPathList["_cache"].$path.'.json';
+		$result = json_file_read($path);
+		if($result!==null){
+			$mtime = filemtime($path);
+			$mtime = date("Y/m/d H:i:s",$mtime);
+			$now =date("Y-m-d H:i:s");
+			$mtime=strtotime($mtime);
+			$now=strtotime($now);
+			$d = intval($now-$mtime);
+			//1分
+			if($d > 60){
+				unlink($path);
+				return null;
+			}
+		}
+		return $result;
+	}
+	public function clear_cache($path){
+		global $gPathList;
+		TXT_LOG("request", "clear_cache", $path);
 
+		$path = $gPathList["_cache"].$path;
+		delfiles($path.'/');
+	}
+	public function save_cache($result){
+		global $gPathList;
+		$path = $this->get_request_cache_name();
+		mksubdir($path, $gPathList["_cache"]);
+		$path = $gPathList["_cache"].$path.'.json';
+		json_file_write($path, $result);
+	}
+	private function get_request_cache_name(){
+		$path = $_SERVER["REQUEST_URI"];
+		$path = str_replace('+', '_', $path);
+		$path = str_replace('<', '_', $path);
+		$path = str_replace('>', '_', $path);
+		$path = str_replace(':', '_', $path);
+		$path = str_replace('*', '_', $path);
+		$path = str_replace('|', '_', $path);
+		$path = str_replace('?', '/', $path);
+		$paths = explode('/', $path);
+		$path = "";
+		for($i=2;$i<count($paths);$i++){
+			$path.=$paths[$i].'/';
+		}
+		$path = trim($path, '/');
+		TXT_LOG("request", $path);
+		return $path;
+	}
+	public function _esn_sq($str){
+		if ( is_null($str) || ($str === "") ) {
+			return "NULL";
+		}
+		else if ($str === 0 && $numflg) {
+			return "NULL";
+		}
+
+		$str = str_replace(array("\r\n", "\r", "\n"), "<BR>", $str);
+		$str = str_replace("\t", " ", $str);
+
+		return "'".mysqli_real_escape_string($this->db, $str)."'";
+	}
 }

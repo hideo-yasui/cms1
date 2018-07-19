@@ -1,5 +1,4 @@
 <?php
-require_once($gPathList["lib"].'configMail.php');   // メールを即送信する必要がある場合execConfigMailを使う
 require_once($gPathList["lib"].'router.php');
 require_once($gPathList["lib"].'request.php');
 require_once($gPathList["lib"].'controller.php');
@@ -14,17 +13,17 @@ abstract class Application
 	protected $request;
 	public $db;
 	public $dbi;
-	public $system;
+	public $system_info;
 
 	/**
 	 * コンストラクタ
 	 *
 	 * @param boolean $debug
 	 */
-	public function __construct($DBCON, $debug = false)
+	public function __construct($debug = false)
 	{
-		$this->system = $GLOBALS['gEnvList']['system'];
 		$this->dbi = new comDbi();
+		$this->system_info = $this->dbi->getSystem();
 		$this->db = $this->dbi->db;
 		$this->setDebugMode($debug);
 		$this->initialize();
@@ -131,10 +130,24 @@ abstract class Application
 		$controller_class = "";
 		$controller_file = "";
 		switch($controller_name){
-			case "app":
-			case "comService":
-			case "comView":
-			case "testtool":
+			case "service" :
+			case "view" :
+				$controller_class = "common".ucfirst($controller_name);
+				$controller_file = $this->getAppDir() . '/'.$controller_class.'.php';
+				break;
+			case "password" :
+				$controller_class = "recover".ucfirst($controller_name).ucfirst($params["method"]);
+				$controller_file = $this->getAppDir() . '/'.$controller_class.'.php';
+				break;
+			case "require":
+				$controller_class = $action;
+				$controller_file = $_SERVER["DOCUMENT_ROOT"] . '/'.$controller_class;
+				break;
+			case "redirect":
+				$controller_class = $action;
+				$controller_file = $controller_class;
+				break;
+			default:
 				$controller_path = "/";
 				if(isset( $params["subdir"])){
 					$controller_path = $params["subdir"].$controller_path;
@@ -165,27 +178,6 @@ abstract class Application
 					sendJSONResponse($response);
 					exitProc($this->db);
 				}
-				break;
-			case "service" :
-			case "view" :
-				$controller_class = "common".ucfirst($controller_name);
-				$controller_file = $this->getAppDir() . '/'.$controller_class.'.php';
-				break;
-			case "password" :
-				$controller_class = "recover".ucfirst($controller_name).ucfirst($params["method"]);
-				$controller_file = $this->getAppDir() . '/'.$controller_class.'.php';
-				break;
-			case "require":
-				$controller_class = $action;
-				$controller_file = $_SERVER["DOCUMENT_ROOT"] . '/'.$controller_class;
-				break;
-			case "redirect":
-				$controller_class = $action;
-				$controller_file = $controller_class;
-				break;
-			default:
-				$controller_class = $controller_name;
-				$controller_file = $this->getAppDir() . '/'.$controller_class.'.php';
 		}
 		if ($controller_name !== "redirect" && !is_readable($controller_file)) {
 			throw new HttpNotFoundException($controller_class . ' controller is not found.');
@@ -236,11 +228,8 @@ abstract class Application
 	protected function findController($controller_path, $controller_class)
 	{
 		if (!class_exists($controller_path)) {
-			$controller_file = $this->getControllerDir() . '/' .$this->system."/".$controller_path . '.php';
-			if (!is_readable($controller_file)) {
-				$controller_file = $this->getControllerDir() . '/' .$controller_path . '.php';
-				if (!is_readable($controller_file))   return false;
-			}
+			$controller_file = $this->getControllerDir() . '/' .$controller_path . '.php';
+			if (!is_readable($controller_file))   return false;
 			require_once $controller_file;
 			if (!class_exists($controller_class)) {
 				return false;
@@ -258,9 +247,7 @@ abstract class Application
 	{
 		$message = $this->isDebugMode() ? $e->getMessage() : 'Page not found.';
 		$message = htmlspecialchars($message, ENT_QUOTES, 'UTF-8');
-		$controller_file = $this->getAppDir() . '/commonView.php';
-		require_once $controller_file;
-		showPageNotFound();
+		header( "Location: /notfound" ) ;
 	}
 }
 

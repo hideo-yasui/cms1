@@ -417,7 +417,7 @@
 			},
 			type: "GET",
 			async: async,
-			cache: false,
+			cache: !cacheReset,
 			dataType: "JSON",
 			url: (url),
 			data: (_request)

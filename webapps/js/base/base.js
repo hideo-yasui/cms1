@@ -53,10 +53,10 @@
 	//onload系～
 	//---------------------------------------------------
 	function pageOnload(state){
-		_isPageLoad=true;
 		service.setQueryParam();
 		var lq = service.getQueryParam("query_code");
 		if(!util.isEmpty(lq)){
+			_isPageLoad=true;
 			var _req = util.convQueryStringToJson();
 			listInit("listTable", _req, false, function(){
 				var lt = service.getQueryParam("lt");
@@ -67,13 +67,18 @@
 				if(!util.isEmpty(su) && su==1) _isUpdate=true;
 				var pagecode = service.getQueryParam("sp");
 				var formId = service.getQueryParam("sf");
-				var data = util.getLocalData("autosave");
+				var data = _req;
+				var _savedata = util.getLocalData("autosave");
+				if(su && _savedata != null) data = $.extend(data, _savedata);
 				if(!util.isEmpty(formId) && !util.isEmpty(pagecode)){
 					_isPageLoad=true;
+					showEditPage(formId, pagecode,lq, data, su);
+					/*
 					showPage(formId, pagecode, function(){
 						dom.setEditForm(data, formId, _isUpdate);
 						pageOpen(formId);
 					});
+					*/
 				}
 			});
 		}
@@ -169,16 +174,13 @@
 				case "search":
 					searchProc();
 					break;
-				case "close":
-				case "cancel":
-					pageClose();
-					break;
 				case "clear":
 					front.clearFormValue(_currentForm);
 					break;
 				case "back":
-					pageClose();
-					//window.history.back();
+				case "close":
+				case "cancel":
+					window.history.back();
 					break;
 				case "yes":
 					if(util.isFunction(_cache["__callback"])) _cache["__callback"]();
@@ -553,12 +555,8 @@
 		if(util.isEmpty(pagecode)) return;
 		var async = true;
 		if(!util.isEmpty(windowName)) async = false;
-		_cache["_url"]["showPage"] = {"sf" : formId, "sp" : pagecode};
-		if(_isUpdate) _cache["_url"]["showPage"]["su"] = 1;
-		autoSave();
 		service.getAjax(async, "/getpage/"+pagecode, {},
 			function(result, st, xhr) {
-				setUrl();
 				if(util.isEmpty(_currentRequest)) _currentRequest = {"query_code" : pagecode};
 				var param = result["data"][0];
 				var title = param["NAME"];
@@ -572,7 +570,7 @@
 					if(_isUpdate && option["edit_title"] && !util.isEmpty(option["edit_title"])) title = option["edit_title"];
 					var type=$("#"+formId).attr("type");
 					$(".content-sub-title", $("#"+formId)).html(title);
-					switch(param["PAGE_TYPE"]){
+					switch(param["TYPE"]){
 						case "param":
 							var _pageContents = dom.paramPageLoad(option["form"],option["button"],_listTable["listTable"]);
 							$(".content-sub-body", $("#"+formId)).html(_pageContents);
@@ -609,7 +607,9 @@
 
 		_cache["_url"]["listInit"] = req;
 		_cache["_url"]["showPage"] = "";
-
+		delete req["ta"];
+		delete req["to"];
+		delete req["lt"];
 		service.getAjax(true, "/search/"+req["query_code"], req,
 			function(result, st, xhr) {
 				var data =  result["data"];
@@ -661,6 +661,7 @@
 				_listTable[id].listtable("refresh");
 				//切り替えた場合は、画面をスクロールトップにする
 				$(".content-title").html(title);
+				$("title").html(title);
 				$('body, html').scrollTop(0);
 				if(callback && $.type(callback)=="function") callback(option);
 				setUrl();
@@ -798,10 +799,11 @@
 		var val = $(link).text();
 		if(util.isEmpty(val) && !util.isEmpty($(link).val())) val = $(link).val();
 		var _isHistoryAdd = false;
-		switch(accesskey){
-			case "listInit":
+		switch(accesskey.toLowerCase()){
+			case "listinit":
 				_listInfo["page"] = 0;
-				var _req = service.extendRequestJson({"query_code" : target}, data);
+				//var _req = service.extendRequestJson({"query_code" : target}, data);
+				var _req = {"query_code" : target, "PID" : data["ID"]};
 				listInit("listTable",_req, false, function(){
 					var _title = $(".content-title").html();
 					_title = _title.replace("#param#", val);
@@ -811,26 +813,26 @@
 					$(".content-title").html(_title);
 				});
 				break;
-			case "url":
-				//リンククリック＞ページ遷移（パラメータはローカルストレージで渡す）
-				util.setLocalData("_sendParam", JSON.stringify(data));
-				var url = target;
-				location.href = url;
-				break;
 			case "dialog":
 				var pagecode = _currentRequest["query_code"]+"_"+target;
+				showEditPage(_dialogId, pagecode,_currentRequest["query_code"], data, _isUpdate);
+				/*
 				showPage(_dialogId, pagecode, function(){
 					dom.setEditForm(data, _dialogId, _isUpdate);
 					pageOpen(_dialogId);
 				});
+				*/
 				break;
 			case "subpage":
 				if(alt == "newadd") _isUpdate = false;
 				var pagecode = _currentRequest["query_code"]+"_"+target;
+				showEditPage(_editPageId, pagecode,_currentRequest["query_code"], data, _isUpdate);
+				/*
 				showPage(_editPageId, pagecode, function(){
 					dom.setEditForm(data, _editPageId, _isUpdate);
 					pageOpen(_editPageId);
 				}, windowName);
+				*/
 				break;
 			case "message":
 				if(!util.isEmpty(target) && !util.isEmpty(alt)){
@@ -851,7 +853,12 @@
 	function showEditPage(formId, pagecode, querycode, data, isEdit){
 		//編集値取得→編集画面表示→フォームセット
 		var _req = service.extendRequestJson({}, data);
-		if(util.isEmpty(querycode)){
+		_cache["_url"]["showPage"] = {};
+		_cache["_url"]["showPage"]["sf"] = formId;
+		_cache["_url"]["showPage"]["sp"] = pagecode;
+		if(isEdit) _cache["_url"]["showPage"]["su"] = 1;
+		setUrl();
+		if(util.isEmpty(querycode) || util.isEmpty(_req["ID"])){
 			showPage(formId, pagecode,  function(){
 				_isUpdate = isEdit;
 				dom.setEditForm(data, formId, _isUpdate);
@@ -859,13 +866,14 @@
 			});
 		}
 		else {
-			service.getAjax(true, "/getedit/"+querycode, _req,
+			service.getAjax(true, "/getedit/"+querycode+"/"+_req["ID"], {},
 				function(result, st, xhr) {
 					var data =  result["data"];
 					_isUpdate = isEdit;
 					showPage(formId, pagecode, function(){
 						dom.setEditForm(data[0], formId, _isUpdate);
 						pageOpen();
+						autoSave();
 					});
 				},
 				function(xhr, st, err) {
@@ -934,8 +942,11 @@
 	}
 	/*保存処理後の再表示*/
 	function _savedReload(){
+		/*
 		pageClose(_currentForm);
 		listRefresh(true);
+		*/
+		window.history.back();
 	}
 	function autoSave(){
 		if(_saveTimer!=null){

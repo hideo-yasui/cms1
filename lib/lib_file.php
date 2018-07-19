@@ -93,26 +93,34 @@ function getFileExtend($path){
 	$split = explode('.', $path);
 	return $split[count($split)-1];
 }
-
 /**
-* フォルダ削除
-* フォルダ内にファイルが存在する場合は、フォルダ内のファイルを削除
-* @param string $dir 削除対象
-* @return void
+* サブフォルダ作成
+* @param string $path 対象ファイルパス
+* @param string $current カレントファイルパス
+* @return string
 */
-function remove_directory($dir) {
-	if($handle = opendir("$dir")){
-		while (false !== ($item = readdir($handle))) {
-			if ($item != "." && $item != "..") {
-				if (is_dir("$dir/$item")) {
-					remove_directory("$dir/$item");
-				} else {
-					unlink("$dir/$item");
-				}
+function mksubdir($path, $current){
+	$paths = explode('/', $path);
+	$current = $current;
+	for($i=0;$i<count($paths)-1;$i++){
+		$folder = $paths[$i];
+		if(empty($folder)) continue;
+		$current .= $folder;
+		if(!file_exists($current)){
+			mkdir($current, '0755');
+		}
+		$current .='/';
+	}
+}
+function delfiles($dir){
+	TXT_LOG("request", $dir);
+	if ($dirHandle = opendir ($dir)) {
+		while (false !== ($fileName = readdir($dirHandle))) {
+			if ( $fileName != "." && $fileName != ".." ) {
+				unlink ($dir.$fileName);
 			}
 		}
-		closedir($handle);
-		rmdir($dir);
+		closedir ( $dirHandle );
 	}
 }
 /**
@@ -141,4 +149,18 @@ function file_unzip($zip_path, $unzip_dir, $file_mod = 0755) {
 	}
 	$zip->close();
 	return $files;
+}
+function json_file_write($savefile, $data){
+	$json = fopen($savefile,  'w+b');
+	fwrite($json, json_encode($data));
+	fclose($json);
+}
+function json_file_read($savefile){
+	if(!file_exists($savefile)){
+		return null;
+	}
+	$json = file_get_contents($savefile);
+	$json = mb_convert_encoding($json, 'UTF8', 'ASCII,JIS,UTF-8,EUC-JP,SJIS-WIN');
+	$obj = json_decode($json,true);
+	return $obj;
 }

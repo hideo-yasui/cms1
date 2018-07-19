@@ -100,11 +100,11 @@
 			<i class="fa fa-user-alt"></i>
 		</a>
 		<div class="dropdown-menu dropdown-menu-sm dropdown-menu-right">
-			<a href="#" class="dropdown-item">
+			<a href="/profile" class="dropdown-item">
 				<i class="fa fa-user-circle mr-2"></i>プロフィール
 			</a>
 			<div class="dropdown-divider"></div>
-			<a href="#" class="dropdown-item">
+			<a href="/logout" class="dropdown-item">
 				<i class="fa fa-sign-out-alt mr-2"></i>ログアウト
 			</a>
 		</div>
