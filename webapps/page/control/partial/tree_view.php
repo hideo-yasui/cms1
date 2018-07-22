@@ -75,6 +75,7 @@ EOT;
 		$name = $cnodedata["NAME"];
 		$style = $cnodedata["STYLE"];
 		$option = $cnodedata["option"];
+		$active = $cnodedata["active"];
 		$target = "";
 		$accesskey = "";
 		if(isset($option)){
@@ -83,7 +84,7 @@ EOT;
 		}
 echo <<<EOT
 <li class="nav-item">
-  <a id="$cnode" href="javascript:void(0);" class="nav-link" onClick="base.linkProc(this, {})" accesskey="$accesskey" target="$target">
+  <a id="$cnode" href="javascript:void(0);" class="nav-link $active" onClick="base.linkProc(this, {})" accesskey="$accesskey" target="$target">
 	<i class="fa fa-$style nav-icon"></i>
 	<p>
 		$name

@@ -20,7 +20,7 @@ class comDbi extends Dbi
 		if(!isset($_SESSION["getSystem"])){
 			$host = $_SERVER["SERVER_NAME"];
 			//masterから、ホストによりsystemとconnectを取得
-			$query = 'select * from master.m_system s';
+			$query = 'select *, s.NAME as NAME from master.m_system s';
 			$query .= ' inner join master.m_connect c on c.SYSTEM_CODE=s.SYSTEM_CODE';
 			$query .= ' WHERE HOST_NAME ='."'".$host."'";
 			$query .= ' limit 1';
