@@ -50,7 +50,7 @@
 <script src="/js/lib/deflate.js"></script>
 <script src="/js/lib/timsort.js"></script>
 <script src="/js/base/util.js<?php echo "?v=".$GLOBALS['gEnvList']['version']; ?>"></script>
-<script src="/js/base/treeView.js<?php echo "?v=".$GLOBALS['gEnvList']['version']; ?>"></script>
+<script src="/js/base/cardTable.js<?php echo "?v=".$GLOBALS['gEnvList']['version']; ?>"></script>
 <script src="/js/base/listTable.js<?php echo "?v=".$GLOBALS['gEnvList']['version']; ?>"></script>
 <script src="/js/base/fileUI.js<?php echo "?v=".$GLOBALS['gEnvList']['version']; ?>"></script>
 <script src="/js/base/dom.js<?php echo "?v=".$GLOBALS['gEnvList']['version']; ?>"></script>
