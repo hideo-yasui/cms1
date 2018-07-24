@@ -35,7 +35,7 @@ if(!file_exists ($gPathList["_cache"])){
 }
 
 $gEnvList = array();
-$gEnvList["version"] 	= '1.0.0.1' ;
+$gEnvList["version"] 	= '1.0.0.2' ;
 
 // Slack WebHock End Point
 $gEnvList["SLACK_endpoint"]		= "";
