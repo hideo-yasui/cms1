@@ -1,53 +1,36 @@
-;(function($, undefined){
-	"use strict";
-	var _sortText = "";
-	var _table = [
-		'<thead>',
-		'</thead>',
-		'<tbody>',
-		'</tbody>',
-	].join('');
-	var _edit = '<button type="button" class="btn btn-outline-success btn-sm" accesskey="rowedit"><i class="fa fa-edit"></i></button>';
-	var _copy = '<button type="button" class="btn btn-outline-primary btn-sm" accesskey="rowcopy"><i class="fa fa-clone"></i></button>';
-	var _delete = '<button type="button" class="btn btn-outline-danger btn-sm" accesskey="rowdelete"><i class="fa fa-minus-circle"></i></button>';
-	var _table = null;
-	// definition
-	function listTable(element, options) {
+"use strict";
+class ListTable extends CardTable{
+	//data-formt : ID, value, title, imgurl, limit_ratio, limit_date
+
+	constructor(element, options) {
+		super(element, options);
+
+		this.parent_dom = 'table';
+		this._edit = '<button type="button" class="btn btn-outline-success btn-sm" accesskey="rowedit"><i class="fa fa-edit"></i></button>';
+		this._copy = '<button type="button" class="btn btn-outline-primary btn-sm" accesskey="rowcopy"><i class="fa fa-clone"></i></button>';
+		this._delete = '<button type="button" class="btn btn-outline-danger btn-sm" accesskey="rowdelete"><i class="fa fa-minus-circle"></i></button>';
+		this._table = null;
 		this.element = element;
 		this.publish(options);
 	}
-	//usage:if listTable show & update contents
-	listTable.prototype.publish = function(options) {
-		this.options = options;
-		this.display = options.display;
-		this.data = options.data;
-		this.tempdata = null;
-		this.filterVal = options.filterVal;
-		this.sortField = options.sortField;
-		this.maxPageSize = options.maxPageSize;
-		this.currentSort = {};
-		this.currentSortOrder = [];
-		this.sortFieldLength = 0;
-	};
-	//usage:if listTable show & update contents
-	listTable.prototype.refresh = function(data) {
+	refresh(data) {
 		this.tempdata = null;
 
 		$(this.element).show();
-		if(!data) this.tempdata = _dataCopy(this.data);
-		else this.tempdata = _dataCopy(data);
+		if(!data) this.tempdata = this._dataCopy(this.data);
+		else this.tempdata = this._dataCopy(data);
 
 		if(!util.isEmpty(this.filterVal) && util.isFunction(this.options.onFilter)) this.tempdata = this.options.onFilter(this.tempdata, this.filterVal);
 		if(util.isFunction(this.options.onSort)) this.tempdata = this.options.onSort(this.tempdata, this.getSortField());
 		if(!this.tempdata || this.tempdata==null) return;
-		_table = this.element.find('table');
-		var _html = '';//'<thead>'+this.__getHeaderHtml()+'</thead>';
+		this._table = this.element.find(this.parent_dom);
+		var _html = '';
 		_html += '<tbody>'+this.__getHeaderHtml()+this.__getBodyHtml()+'</tbody>';
-		_table.html(_html);
+		this._table.html(_html);
 		this.__eventSetting();
 	};
-	//inner method : get thead.innerHTML of this object
-	listTable.prototype.__getHeaderHtml = function() {
+
+	__getHeaderHtml() {
 		var header = '';
 		//var classArray = [];
 		header+='<tr>';
@@ -88,8 +71,7 @@
 		return header;
 	};
 
-	//inner method : get tbody.innerHTML of this object
-	listTable.prototype.__getBodyHtml = function() {
+	__getBodyHtml() {
 		var body = '';
 		var n= this.tempdata.length;
 		var m = (n+"").length;
@@ -216,13 +198,13 @@
 							val = util.setFileUnit(val);
 							break;
 						case "edit_copy_delete" :
-							val = _edit+_copy+_delete;
+							val = this._edit+this._copy+this._delete;
 							break;
 						case "edit_delete" :
-							val = _edit+_delete;
+							val = this._edit+this._delete;
 							break;
 						case "edit" :
-							val = _edit;
+							val = this._edit;
 							break;
 						case "delete" :
 							val = _delete;
@@ -242,25 +224,24 @@
 		}
 		return body;
 	};
-	//inner method : setting event of inner form
-	listTable.prototype.__eventSetting = function() {
-		_table.find('button').unbind("click");
-		//_table.find('button.btn[accesskey*=row]').unbind("click");
-		_table.find('input[type=checkbox]').unbind("change");
-		_table.find('._rowsort').unbind("click");
+	__eventSetting() {
+		this._table.find('button').unbind("click");
+		//this._table.find('button.btn[accesskey*=row]').unbind("click");
+		this._table.find('input[type=checkbox]').unbind("change");
+		this._table.find('._rowsort').unbind("click");
 
 		var _self = this;
-		if(_table.find('a:not(.btn)').length){
-			_table.find('a:not(.btn)').on("click", function(event){
+		if(this._table.find('a:not(.btn)').length){
+			this._table.find('a:not(.btn)').on("click", function(event){
 				event.preventDefault();
-				var idx = $("#__index__", $(this).parent().parent()).val();
+				var idx = $("#__index__", $(this).parent().parent().parent()).val();
 				if (idx >= 0) {
 					_self.options.onLinkClick.call(undefined, $(this), _self.tempdata[idx]);
 				}
 			});
 		}
-		if(_table.find('button.btn').length){
-			_table.find('button.btn').on("click", function(event){
+		if(this._table.find('button.btn').length){
+			this._table.find('button.btn').on("click", function(event){
 				event.preventDefault();
 				var idx = $("#__index__", $(this).parent().parent()).val();
 				if (idx >= 0) {
@@ -268,13 +249,13 @@
 				}
 			});
 		}
-		if(_table.find('input[type=checkbox]').length){
-			_table.find('input[type=checkbox]').on("change", function(event){
+		if(this._table.find('input[type=checkbox]').length){
+			this._table.find('input[type=checkbox]').on("change", function(event){
 				event.preventDefault();
 				_checkboxChange();
 			});
-			_table.find('._allcheck').unbind("change");
-			_table.find('._allcheck').on("change", function(event){
+			this._table.find('._allcheck').unbind("change");
+			this._table.find('._allcheck').on("change", function(event){
 				event.preventDefault();
 				var checked = $(this).prop('checked');
 				_self.selectAll(!checked);
@@ -282,7 +263,7 @@
 
 		}
 		if(this.sortFieldLength>0){
-			_table.find('a._rowsort').on("click", function(event){
+			this._table.find('a._rowsort').on("click", function(event){
 				event.preventDefault();
 				var field = $(this).attr("field");
 				var sort = _self.currentSort[field];
@@ -300,270 +281,42 @@
 				_self.refresh();
 			});
 		}
-		//$("#listTable table").html(header+body);
 	};
-
-	function _checkboxChange(){
-		$("tr", _table).removeClass("selected");
-		$("tr:has(input:checked)", _table).addClass("selected");
+	_checkboxChange(obj){
+		$("tr", this._table).removeClass("selected");
+		$("tr:has(input:checked)", this._table).addClass("selected");
 	}
 
-	//usage:if listTable hiden & dispose
-	listTable.prototype.remove = function() {
-		this.element.find('table').empty();
-	};
-	//usage:if listTable visible change
-	listTable.prototype.visible = function(f) {
-		if(this.display != f){
-			if(!f) {
-				$(this.element).hide();
-				this.remove();
-			}
-			else {
-				$(this.element).show();
-				this.refresh();
-			}
-		}
-		this.display = f;
-	};
-	listTable.prototype.filter = function(r) {
-		this.filterVal = r;
-		if(this.display) this.refresh();
-	};
-	//fieldFormat:listTable fieldType=taxon
-	listTable.prototype.taxonName = function(val) {
-		if(val.indexOf(";")<0) return val;
-		var vals = val.split(";");
-		var result = "";
-		for(var i=0,n=vals.length;i<n;i++){
-			var c = vals[i].substring(0,1);
-			if(c=="k") continue; //kingdom名称を省略
-			if(!vals[i] || vals[i]=="") continue;
-			result += '<span class="'+c+'">'+vals[i]+';</span>';
-		}
-		return result;
-	};
-	//fieldFormat:listTable fieldType=number
-	listTable.prototype.zeroPadding = function(val, maxlen) {
-		if(!maxlen) maxlen = this.options.zeroPaddingSize;
-		var len, diff, i;
-		val = '' + val;
-		len = val.length;
-		if (len >= maxlen) {
-			return val;
-		}
-		diff = maxlen - len;
-		for (i = 0; i < diff; i++) {
-			val = '0' + val;
-		}
-		return val;
-	}
-	//if you want to get data of this
-	listTable.prototype.getData = function(index, field) {
-		if(index && index>=0 && index<this.tempdata.length){
-			if(field && typeof field =="string") this.tempdata[index][field];
-			else if(field && typeof field =="object") {
-				//this case is field's type is Array
-				var result = {};
-				for(var f=0,m= field.length;f<m;f++){
-					result[field[f]] = this.tempdata[index][field[f]];
-				}
-				return result;
-			}
-		}
-		else {
-			if(field && typeof field =="string") {
-				var result = [];
-				for(var i=0,n=this.tempdata.length;i<n;i++){
-					result[result.length] = this.tempdata[i][field];
-				}
-				return result;
-			}
-			else if(field && typeof field =="object") {
-				//this case is field's type is Array
-				var result = [];
-				for(var i=0,n=this.tempdata.length;i<n;i++){
-					var row = {};
-					for(var f=0,m= field.length;f<m;f++){
-						row[field[f]] = this.tempdata[i][field[f]];
-					}
-					result[result.length] = row;
-				}
-				return result;
-			}
-		}
-		return this.tempdata;
-	};
-	//if you want to search data of this
-	listTable.prototype.existData = function(index, field, value) {
-		if(!value) return -1;
-		if(field && typeof field =="string" && typeof value =="string") {
-			var target = this.getData(index, field);
-			for(var i=0;i<target.length;i++){
-				if(target[i]==value){
-					return i;
-				}
-			}
-		}
-		else {
-			//field is associative array
-			var _field = [];
-			for(var key in value){
-				_field.push(key);
-			}
-			var target = this.getData(index, _field);
-			for(var i=0;i<target.length;i++){
-				var _exist = true;
-				for(var key in value){
-					if(!target[i][key]) return -1;
-					if(value[key]!=target[i][key]) _exist = false;
-				}
-				if(_exist) return i;
-			}
-		}
-		return -1;
-	};
-	//if you want to all select or all no select
-	listTable.prototype.selectAll = function(unchecked) {
-		var checked = true;
-		if(unchecked) checked = false;
-		_table.find('._allcheck').prop('checked', checked);
-		_table.find('input:checkbox').prop('checked', checked);
-		_checkboxChange();
-
-	};
-	//if you want to select of this searched data
-	listTable.prototype.selectData = function(index, field, value, unchecked) {
-		var rowNo = this.existData(index, field, value);
-		if(rowNo>=0) {
-			var check = true;
-			if(unchecked) check = false;
-			$("td>input[type='checkbox']:eq("+rowNo+")", _table).each(function(i){
-				$(this).prop("checked", check);
-			});
-			_checkboxChange();
-			return true;
-		}
-		return false;
-	};
-	//if you want to get data of this.selected or checked
-	listTable.prototype.getSelectData = function(field) {
-		var selectRow = [];
-		var result = [];
-		$("input[type='checkbox']:checked", _table).each(function(i){
-			var rowNo = $("#__index__", $(this).parent().parent()).val();
-			if(util.isInteger(rowNo)){
-				selectRow.push(rowNo);
-			}
-		});
-		if(!field){
-			var result = [];
-			for(var i=0,n=selectRow.length;i<n;i++){
-				var idx = selectRow[i];
-				result[result.length] = this.tempdata[idx];
-			}
-		}
-		else if(field && typeof field =="string") {
-			var result = [];
-			for(var i=0,n=selectRow.length;i<n;i++){
-				var idx = selectRow[i];
-				result[result.length] = this.tempdata[idx][field];
-			}
-		}
-		else if(field && typeof field =="object") {
-			//this case is field's type is Array
-			var result = [];
-			for(var i=0,n=selectRow.length;i<n;i++){
-				var idx = selectRow[i];
-				var row = {};
-				for(var f=0,m= field.length;f<m;f++){
-					row[field[f]] = this.tempdata[idx][field[f]];
-				}
-				result[result.length] = row;
-			}
-		}
-		return result;
-	};
-	listTable.prototype.getSortField = function() {
-		var ret = {};
-		for(var i=0;i<this.currentSortOrder.length;i++){
-			if(ret[this.currentSortOrder[i]]) continue;
-			ret[this.currentSortOrder[i]] = this.currentSort[this.currentSortOrder[i]];
-		}
-		return ret;
-	};
-	// default options
-	listTable.DEFAULTS = {
-		"header" : {"no" : {"text" : "No", "class" : "f1", "field" : null},
-					"name" : {"text" : "名称", "class" : "f2", "field" : "name"},
-					"val" : {"text" : "値", "class" : "f3", "field" : "val"}
-		},
-		"data" : [
-			{"name" : "AAA", "val" : 101},
-			{"name" : "BBB", "val" : 102},
-			{"name" : "CCC", "val" : 103},
-		],
-		"styleName" : "table",
-		"tableStyleName" : "list-chart",
-		"filterVal" : "",
-		"zeroPaddingSize" : 3,
-		"sortField" : "val",
-		"display" : false,
-		"maxPageSize" : null,
-		"onFilter" : function(data, filter){
-			return data;
-		},
-		"onLinkClick" : function(button, data){
-			return data;
-		},
-		"onButtonClick" : function(button, data){
-			return data;
-		},
-		"onSort" : function(data, sortField){
-			try {
-				data.sort(function(lhs, rhs){
-					return rhs[sortField] - lhs[sortField];
-				});
-			}
-			catch(e) {}
-			return data;
-		}
-	};
-	function _dataCopy(data){
-		var _tempdata = new Array(data.length);
-		for(var i=0,n=data.length;i<n;i++){
-			_tempdata[i] = {};
-			for(var key in data[i]){
-				_tempdata[i][key] = data[i][key];
-			}
-		}
-		return _tempdata;
-	}
-
-	// listTable plugin
-	$.fn.listtable = function(option) {
-		var args = Array.prototype.slice.call(arguments, 1);
-		var results;
-		this.each(function(){
-			var $this = $(this),
-				data = $this.data('util_listtable'),
-				options;
-			if (!data) {
-				options = $.extend({}, listTable.DEFAULTS, $this.data(), typeof option === 'object' && option);
-				$this.data('util_listtable', new listTable($this, options));
-			} else {
-				if (typeof option === 'string' && option.charAt(0) !== '_' && typeof data[option] === 'function') {
-					results = data[option].apply(data, args);
-				}
-				else if (typeof option === "object" || !option) {
-					options = $.extend({}, data.options, typeof option === 'object' && option);
-					data.publish.call(data, options);
-				}
-				else {
-					$.error('Method ' + option + ' does not exist on listchart.');
-				}
-			}
-		});
-		return (results != undefined ? results : this);
-	};
-})(jQuery);
+}
+/*
+var data =[
+	{"ID" : 1, "value" : 3, "title" : "商品名", "imgurl" : "/img/reizo/meat/100.png", "limit_ratio": 40, "limit_date" : "2018/08/02"},
+	{"ID" : 2, "value" : 3, "title" : "商品名", "imgurl" : "/img/reizo/meat/100.png", "limit_ratio": 40, "limit_date" : "2018/08/02"}
+];
+var _listParam = {
+	"data" : data,
+	"header" : {
+		"0" : {"field" : "ID", "text" : "ID", "title" : "", "class" : "", "type" : ""},
+		"1" : {"field" : "value", "text" : "value", "title" : "", "class" : "", "type" : ""},
+		"2" : {"field" : "title", "text" : "title", "title" : "", "class" : "", "type" : ""},
+		"3" : {"field" : "imgurl", "text" : "imgurl", "title" : "", "class" : "", "type" : ""},
+		"4" : {"field" : "limit_ratio", "text" : "limit_ratio", "title" : "", "class" : "", "type" : ""},
+		"5" : {"field" : "limit_date", "text" : "limit_date", "title" : "", "class" : "", "type" : ""}
+	},
+	"zeroPaddingSize" : 3,
+	"maxPageSize" : 20,
+	"sortField" : "",
+	"filterVal" : null,
+	"onFilter" : function(){
+		alert("onfileter");
+	},
+	"onButtonClick" : function(){
+		alert("button click");
+	},
+	"onLinkClick" : function(){
+		alert("link click");
+	},
+};
+var	_listTable = new ListTable($("#listTable"), _listParam);
+_listTable.refresh(data);
+*/

@@ -8,7 +8,6 @@
 	"use strict";
 	var _saveTimer = null;
 	var _isUpdate = false;
-	var _isBarcodeScan = false;
 	var _isImport = false;
 	var _maxInt = Number.MAX_SAFE_INTEGER;
 	var _cache = {
@@ -20,19 +19,13 @@
 		"_url" : {
 		},
 	};
-	var _isHistoryLoad = false;
-	var _currentHistoryNo = 0;
 	var _currentForm = "main";
-	var _formHistory = [];
-	//treeView用のIF
-	var _treeView = null;
 	//list_table用のIF
 	var _currentRequest = null;
 	var _listTable = {};
 	var _listInfo = {"page" : 0, "maxpage" : 0, "count" : 0, "option" : null};
 	var _editPageId = "sub";
 	var _dialogId = "subDialog";
-	var _isDebug = false;
 	var _isPageLoad = false;
 	var public_method = {
 		//初期処理
@@ -42,7 +35,6 @@
 			};
 			pageOnload();
 		},
-		showMessage : showMessage,
 		pageSettinged : pageSettinged,
 		getFileForm : getFileForm,
 		listRefresh : listRefresh,
@@ -367,11 +359,11 @@
 						var keyword = $("input[name='p_search_word']").val();
 						$("input, textarea, select", $("#"+_currentForm)).val("");
 						//console.log("検索"+keyword);
-						keyword = keyword.replaceAll("　", " "); //全角スペースを半角スペースに変換
+						keyword = keyword.replace_all("　", " "); //全角スペースを半角スペースに変換
 						_searchProc({"searchword" : keyword});
 						break;
 					case "setting":
-						var selectData = _listTable["listTable"].listtable("getSelectData", null);
+						var selectData = _listTable["listTable"].getSelectData(null);
 						if(selectData.length<1){
 							service.alert("E_LIST_NOSELECT", "", null);
 						}
@@ -417,17 +409,6 @@
 		}
 
 	}
-	//---------------------------------------------------
-	//message
-	//---------------------------------------------------
-	//メッセージ表示
-	function showMessage(messageCode, messageParam){
-		var message = service.getMessage(messageCode, messageParam);
-		$("#message .modal-body").html(message["body"]);
-		$("#message .modal-title", $("#message").parent()).html(title);
-		$('#message').modal('show');
-	}
-
 	//---------------------------------------------------
 	//ajax処理系～
 	//---------------------------------------------------
@@ -646,11 +627,21 @@
 					"onLinkClick" : linkProc
 				};
 				if(_listTable[id]){
-					_listTable[id].listtable(_listParam);
+					_listTable[id].publish(_listParam);
 				}
 				else {
-					_listTable[id] = $("#"+id).listtable(_listParam);
+					var _component = $("#"+id).attr("alt");
+					switch(_component.toLowerCase()){
+						case "cardtable":
+							_listTable[id] = new CardTable($("#"+id), _listParam);
+							break;
+						case "listtable":
+							_listTable[id] = new ListTable($("#"+id), _listParam);
+							break;
+					}
 				}
+				_listTable[id].refresh();
+
 				var _fromRecord = _listInfo["page"]*_pageSize+1;
 				var _toRecord = _fromRecord+_pageSize-1;
 				if(_toRecord > _listInfo["count"]) _toRecord = _listInfo["count"];
@@ -658,7 +649,6 @@
 				if(count==0) _pageInfo = "-";
 				$("#pageInfo").html(""+(_listInfo["page"]+1) + " ページ /  " + (_listInfo["maxpage"]+1)+"ページ中");
 				$("#pageInfo").attr("title" , _pageInfo);
-				_listTable[id].listtable("refresh");
 				//切り替えた場合は、画面をスクロールトップにする
 				$(".content-title").html(title);
 				$("title").html(title);
@@ -702,7 +692,7 @@
 		var result = [];
 		for(var i=0,n=filterVal.length;i<n;i++){
 			if(util.isEmpty(filterVal[i])) continue;
-			var rowNo = _listTable["listTable"].listtable("existData", null, filter, filterVal[i]);
+			var rowNo = _listTable["listTable"].existData(null, filter, filterVal[i]);
 			result.push(data[rowNo]);
 		}
 		return result;

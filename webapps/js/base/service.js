@@ -190,10 +190,10 @@
     */
 	function getDecodeString(str){
 		if(util.isEmpty(str)) return "";
-		var res = str.replaceAll( ":eq:", "=");
-		res = res.replaceAll(":amp:", "&");
-		res = res.replaceAll(":sl:", "/");
-		res = res.replaceAll(":hash:", "#");
+		var res = str.replace_all( ":eq:", "=");
+		res = res.replace_all(":amp:", "&");
+		res = res.replace_all(":sl:", "/");
+		res = res.replace_all(":hash:", "#");
 		res = base64decode(res);
 		res = utf8to16(res);
 		return res;
@@ -209,10 +209,10 @@
 		if(util.isEmpty(str)) return "";
 		var res = utf16to8(str);
 		res = base64encode(res);
-		res = res.replaceAll("=", ":eq:");
-		res = res.replaceAll("&", ":amp:");
-		res = res.replaceAll("/", ":sl:");
-		res = res.replaceAll("#", ":hash:");
+		res = res.replace_all("=", ":eq:");
+		res = res.replace_all("&", ":amp:");
+		res = res.replace_all("/", ":sl:");
+		res = res.replace_all("#", ":hash:");
 		return res;
 	}
 	/**

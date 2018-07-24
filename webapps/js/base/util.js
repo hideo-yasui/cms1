@@ -907,8 +907,13 @@
 
 })(this);
 
-String.prototype.replaceAll = function (org, dest){
-	return this.split(org).join(dest);
+String.prototype.replace_all = function (org, dest){
+	if(this.split){
+		return this.split(org).join(dest);
+	}
+	else {
+		return ;
+	}
 };
 //console.log対応していない場合のエラー回避
 if(!window.console) {

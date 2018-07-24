@@ -719,7 +719,7 @@
 				if(type=="filesize"){
 					val = util.setFileUnit(val);
 				}
-				if(typeof val === 'string' && val.indexOf("\n")>=0) val = val.replaceAll("\n", "<br>");
+				if(typeof val === 'string' && val.indexOf("\n")>=0) val = val.replace_all("\n", "<br>");
 				$(this).html(val);
 			});
 			$("a", $("#"+_currentForm)).each(function(){
@@ -882,7 +882,7 @@
 						var keyword = $("input[name='p_search_word']").val();
 						$("input, textarea, select", $("#"+_currentForm)).val("");
 						//console.log("検索"+keyword);
-						keyword = keyword.replaceAll("　", " "); //全角スペースを半角スペースに変換
+						keyword = keyword.replace_all("　", " "); //全角スペースを半角スペースに変換
 						_searchProc({"searchword" : keyword});
 						break;
 					case "setting":

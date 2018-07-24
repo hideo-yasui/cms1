@@ -39,7 +39,7 @@
 		for(var key in data){
 			if(textSource.indexOf("#") < 0) break;
 			if(textSource.indexOf("#"+key+"#") < 0) continue;
-			textSource = textSource.replaceAll("#"+key+"#", data[key]);
+			textSource = textSource.replace_all("#"+key+"#", data[key]);
 		}
 		return textSource;
 	}
@@ -583,7 +583,7 @@
 		//_alertMessage("E_AUTH_FAIL",  msg, service.logout);
 		var _msg = "セッションタイムアウトしました。<br>ログアウト後、もう一度ログインしてください";
 		if(_isDebug) {
-			msg = msg.replaceAll("\n", "<br>");
+			msg = msg.replace_all("\n", "<br>");
 			_msg+=+"<br>"+msg
 		}
 		_message("システムエラー",
@@ -725,7 +725,7 @@
 				if(type=="filesize"){
 					val = util.setFileUnit(val);
 				}
-				if(typeof val === 'string' && val.indexOf("\n")>=0) val = val.replaceAll("\n", "<br>");
+				if(typeof val === 'string' && val.indexOf("\n")>=0) val = val.replace_all("\n", "<br>");
 				$(this).html(val);
 			});
 			$("a", $("#"+form)).each(function(){

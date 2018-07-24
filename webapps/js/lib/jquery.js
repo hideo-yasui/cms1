@@ -6002,7 +6002,7 @@ jQuery.each({
 	prependTo: "prepend",
 	insertBefore: "before",
 	insertAfter: "after",
-	replaceAll: "replaceWith"
+	replace_all: "replaceWith"
 }, function( name, original ) {
 	jQuery.fn[ name ] = function( selector ) {
 		var elems,

@@ -1,45 +1,43 @@
-;(function($, undefined){
-	"use strict";
-	var _sortText = "";
-	//data-formt : id, value, title, imgurl, limit-ratio, limit-date
-	var _row_template = [
-		'<li class="active">',
-			'<input type="hidden value="#__index__# name="__index__" id="__index__" />',
-			'<input type="hidden value="#ID# name="ID" />',
-			'<div class="panel-badge">',
-				'<span class="right badge badge-danger float-right mx-1 text-lg">#value#</span>',
-			'</div>',
-			'<h5><i class="fa fa-tag mr-1"></i>#title#</h5>',
-			'<div class="mailbox-attachment-icon has-img">',
-				'<img src="#imgurl#" alt="Attachment">',
-				'<h4 class="icon-label w-100 h-100 hide">',
-					'<div class="text-success text-xl"><i class="fa fa-check-circle"></i></div>',
-				'</h4>',
-			'</div>',
-			'<div class="mailbox-attachment-info">',
-				'<div class="progress my-1">',
-					'<div class="progress-bar bg-primary" role="progressbar" aria-valuenow="#limit_ratio#" aria-valuemin="0" aria-valuemax="100" style="width: #limit_ratio#%">',
-						'<span class="sr-only"></span>',
-					'</div>',
+"use strict";
+class CardTable {
+	//data-formt : ID, value, title, imgurl, limit_ratio, limit_date
+	constructor(element, options) {
+		this.parent_dom = 'ul';
+		this._row_template = [
+			'<li class="">',
+				'<input type="hidden" value="#__index__#" name="__index__" id="__index__" />',
+				'<input type="hidden" value="#ID# name="ID" />',
+				'<div class="panel-badge">',
+					'<span class="right badge badge-danger float-right mx-1 text-lg">#value#</span>',
 				'</div>',
-				'<span class="mailbox-attachment-size">',
-				'	<i class="fa fa-calendar-times mr-1"></i>#limit_date#',
-					'#button#',
-				'</span>',
-			'</div>',
-		'</li>',
-	].join('');
-	var _edit = '<button href="javascript:void(0);" class="btn btn-default btn-sm float-right"><i class="fa fa-edit"></i></button>';
-	var _copy = '<button href="javascript:void(0);" class="btn btn-default btn-sm float-right"><i class="fa fa-utensils"></i></button>';
-	var _delete = '<button href="javascript:void(0);" class="btn btn-default btn-sm float-right"><i class="fa fa-trash-alt"></i></button>';
-	var _table = null;
-	// definition
-	function cardTable(element, options) {
+				'<div class="mailbox-attachment-icon has-img">',
+					'<h5><i class="fa fa-tag mr-1"></i>#title#</h5>',
+					'<img src="#imgurl#" alt="Attachment">',
+					'<h4 class="icon-label hide">',
+						'<div class="text-success text-xl"><i class="fa fa-check-circle"></i></div>',
+					'</h4>',
+				'</div>',
+				'<div class="mailbox-attachment-info">',
+					'<div class="progress my-1">',
+						'<div class="progress-bar #limit_ratio_color#" role="progressbar" aria-valuenow="#limit_ratio#" aria-valuemin="0" aria-valuemax="100" style="width: #limit_ratio#%">',
+							'<span class="sr-only"></span>',
+						'</div>',
+					'</div>',
+					'<span class="mailbox-attachment-size">',
+					'	<i class="fa fa-calendar-times mr-1"></i>#limit_date#',
+						'#button#',
+					'</span>',
+				'</div>',
+			'</li>',
+		].join('');
+		this._edit = '<button href="javascript:void(0);" class="btn btn-default btn-sm float-right" accesskey="rowedit"><i class="fa fa-edit"></i></button>';
+		this._copy = '<button href="javascript:void(0);" class="btn btn-default btn-sm float-right" accesskey=""><i class="fa fa-utensils"></i></button>';
+		this._delete = '<button href="javascript:void(0);" class="btn btn-default btn-sm float-right" accesskey="rowdelete"><i class="fa fa-trash-alt"></i></button>';
+		this._table = null;
 		this.element = element;
 		this.publish(options);
 	}
-	//usage:if cardTable show & update contents
-	cardTable.prototype.publish = function(options) {
+	publish(options) {
 		this.options = options;
 		this.display = options.display;
 		this.data = options.data;
@@ -51,30 +49,28 @@
 		this.currentSortOrder = [];
 		this.sortFieldLength = 0;
 	};
-	//usage:if cardTable show & update contents
-	cardTable.prototype.refresh = function(data) {
+	refresh(data) {
 		this.tempdata = null;
 
 		$(this.element).show();
-		if(!data) this.tempdata = _dataCopy(this.data);
-		else this.tempdata = _dataCopy(data);
+		if(!data) this.tempdata = this._dataCopy(this.data);
+		else this.tempdata = this._dataCopy(data);
 
 		if(!util.isEmpty(this.filterVal) && util.isFunction(this.options.onFilter)) this.tempdata = this.options.onFilter(this.tempdata, this.filterVal);
 		if(util.isFunction(this.options.onSort)) this.tempdata = this.options.onSort(this.tempdata, this.getSortField());
 		if(!this.tempdata || this.tempdata==null) return;
-		_table = this.element.find('ul');
+		this._table = this.element.find(this.parent_dom);
 		var _html = '';
 		_html += ''+this.__getHeaderHtml()+this.__getBodyHtml()+'';
-		_table.html(_html);
+		this._table.html(_html);
 		this.__eventSetting();
 	};
-	//inner method : get thead.innerHTML of this object
-	cardTable.prototype.__getHeaderHtml = function() {
+
+	__getHeaderHtml() {
 		return "";
 	};
 
-	//inner method : get tbody.innerHTML of this object
-	cardTable.prototype.__getBodyHtml = function() {
+	__getBodyHtml() {
 		var body = '';
 		var n= this.tempdata.length;
 		var m = (n+"").length;
@@ -83,7 +79,7 @@
 		if(!util.isEmpty(this.maxPageSize) && n>this.maxPageSize) n = this.maxPageSize;
 		for(var i=0;i<n;i++){
 			var _tr_class = "";
-			var _row = _row_template;
+			var _row = this._row_template;
 			_row = _row.replace('#__index__#', i);
 			for(var key in this.options.header){
 				if(!this.options.header[key]["field"]) this.options.header[key]["field"]=null;
@@ -119,36 +115,45 @@
 
 					switch(type){
 						case "edit_copy_delete" :
-							val = _edit+_copy+_delete;
+							val = this._edit+this._copy+this._delete;
 							break;
 						case "edit_delete" :
-							val = _edit+_delete;
+							val = this._edit+this._delete;
 							break;
 						case "edit" :
-							val = _edit;
+							val = this._edit;
 							break;
 						case "delete" :
-							val = _delete;
+							val = this._delete;
 							break;
 					}
 					vals += val;
 				}
-				_row = _row.replaceAll('#'+text+'#', vals);
+				_row = _row.replace_all('#'+text+'#', vals);
+			}
+			var bg_color = this.tempdata[i]["limit_ratio"];
+			if(bg_color > 40){
+				_row = _row.replace_all('#limit_ratio_color#', "bg-success");
+			}
+			else if(bg_color > 20){
+				_row = _row.replace_all('#limit_ratio_color#', "bg-warning");
+			}
+			else {
+				_row = _row.replace_all('#limit_ratio_color#', "bg-danger");
 			}
 			body += _row;
 		}
 		return body;
 	};
-	//inner method : setting event of inner form
-	cardTable.prototype.__eventSetting = function() {
-		_table.find('button').unbind("click");
-		//_table.find('button.btn[accesskey*=row]').unbind("click");
-		_table.find('input[type=checkbox]').unbind("change");
-		_table.find('._rowsort').unbind("click");
+	__eventSetting() {
+		this._table.find('button').unbind("click");
+		//this._table.find('button.btn[accesskey*=row]').unbind("click");
+		this._table.find('input[type=checkbox]').unbind("change");
+		this._table.find('._rowsort').unbind("click");
 
 		var _self = this;
-		if(_table.find('a:not(.btn)').length){
-			_table.find('a:not(.btn)').on("click", function(event){
+		if(this._table.find('a:not(.btn)').length){
+			this._table.find('a:not(.btn)').on("click", function(event){
 				event.preventDefault();
 				var idx = $("#__index__", $(this).parent().parent().parent()).val();
 				if (idx >= 0) {
@@ -156,8 +161,8 @@
 				}
 			});
 		}
-		if(_table.find('button.btn').length){
-			_table.find('button.btn').on("click", function(event){
+		if(this._table.find('button.btn').length){
+			this._table.find('button.btn').on("click", function(event){
 				event.preventDefault();
 				var idx = $("#__index__", $(this).parent().parent().parent()).val();
 				if (idx >= 0) {
@@ -165,26 +170,33 @@
 				}
 			});
 		}
-		if(_table.find('div.mailbox-attachment-icon').length){
-			_table.find('div.mailbox-attachment-icon').on("click", function(event){
+		if(this._table.find('div.mailbox-attachment-icon').length){
+			this._table.find('div.mailbox-attachment-icon').on("click", function(event){
 				event.preventDefault();
-				var idx = $("#__index__", $(this).parent().parent().parent()).val();
-				if (idx >= 0) {
-					_self.options.onButtonClick.call(undefined, $(this), _self.tempdata[idx]);
+				var obj = $("#__index__", $(this).parent());
+				if (obj.val() >= 0) {
+					_checkboxChange(obj.parent());
 				}
 			});
 		}
 	};
-
-	function _checkboxChange(){
+	_checkboxChange(obj){
+		if($(obj).hasClass("active")){
+			$(obj).removeClass("active");
+			$(".icon-label", $(obj)).addClass("hide");
+		}
+		else {
+			$(obj).addClass("active");
+			$(".icon-label", $(obj)).removeClass("hide");
+		}
 	}
 
 	//usage:if cardTable hiden & dispose
-	cardTable.prototype.remove = function() {
-		this.element.find('ul').empty();
+	remove() {
+		this.element.find(this.parent_dom).empty();
 	};
 	//usage:if cardTable visible change
-	cardTable.prototype.visible = function(f) {
+	visible(f) {
 		if(this.display != f){
 			if(!f) {
 				$(this.element).hide();
@@ -197,12 +209,12 @@
 		}
 		this.display = f;
 	};
-	cardTable.prototype.filter = function(r) {
+	filter(r) {
 		this.filterVal = r;
 		if(this.display) this.refresh();
 	};
 	//if you want to get data of this
-	cardTable.prototype.getData = function(index, field) {
+	getData(index, field) {
 		if(index && index>=0 && index<this.tempdata.length){
 			if(field && typeof field =="string") this.tempdata[index][field];
 			else if(field && typeof field =="object") {
@@ -238,7 +250,7 @@
 		return this.tempdata;
 	};
 	//if you want to search data of this
-	cardTable.prototype.existData = function(index, field, value) {
+	existData(index, field, value) {
 		if(!value) return -1;
 		if(field && typeof field =="string" && typeof value =="string") {
 			var target = this.getData(index, field);
@@ -267,21 +279,21 @@
 		return -1;
 	};
 	//if you want to all select or all no select
-	cardTable.prototype.selectAll = function(unchecked) {
+	selectAll(unchecked) {
 		var checked = true;
 		if(unchecked) checked = false;
-		_table.find('._allcheck').prop('checked', checked);
-		_table.find('input:checkbox').prop('checked', checked);
+		this._table.find('._allcheck').prop('checked', checked);
+		this._table.find('input:checkbox').prop('checked', checked);
 		_checkboxChange();
 
 	};
 	//if you want to select of this searched data
-	cardTable.prototype.selectData = function(index, field, value, unchecked) {
+	selectData(index, field, value, unchecked) {
 		var rowNo = this.existData(index, field, value);
 		if(rowNo>=0) {
 			var check = true;
 			if(unchecked) check = false;
-			$("td>input[type='checkbox']:eq("+rowNo+")", _table).each(function(i){
+			$("td>input[type='checkbox']:eq("+rowNo+")", this._table).each(function(i){
 				$(this).prop("checked", check);
 			});
 			_checkboxChange();
@@ -290,10 +302,10 @@
 		return false;
 	};
 	//if you want to get data of this.selected or checked
-	cardTable.prototype.getSelectData = function(field) {
+	getSelectData(field) {
 		var selectRow = [];
 		var result = [];
-		$("input[type='checkbox']:checked", _table).each(function(i){
+		$("input[type='checkbox']:checked", this._table).each(function(i){
 			var rowNo = $("#__index__", $(this).parent().parent()).val();
 			if(util.isInteger(rowNo)){
 				selectRow.push(rowNo);
@@ -327,7 +339,7 @@
 		}
 		return result;
 	};
-	cardTable.prototype.getSortField = function() {
+	getSortField() {
 		var ret = {};
 		for(var i=0;i<this.currentSortOrder.length;i++){
 			if(ret[this.currentSortOrder[i]]) continue;
@@ -335,44 +347,7 @@
 		}
 		return ret;
 	};
-	// default options
-	cardTable.DEFAULTS = {
-		"header" : {"no" : {"text" : "No", "class" : "f1", "field" : null},
-					"name" : {"text" : "名称", "class" : "f2", "field" : "name"},
-					"val" : {"text" : "値", "class" : "f3", "field" : "val"}
-		},
-		"data" : [
-			{"name" : "AAA", "val" : 101},
-			{"name" : "BBB", "val" : 102},
-			{"name" : "CCC", "val" : 103},
-		],
-		"styleName" : "table",
-		"tableStyleName" : "list-chart",
-		"filterVal" : "",
-		"zeroPaddingSize" : 3,
-		"sortField" : "val",
-		"display" : false,
-		"maxPageSize" : null,
-		"onFilter" : function(data, filter){
-			return data;
-		},
-		"onLinkClick" : function(button, data){
-			return data;
-		},
-		"onButtonClick" : function(button, data){
-			return data;
-		},
-		"onSort" : function(data, sortField){
-			try {
-				data.sort(function(lhs, rhs){
-					return rhs[sortField] - lhs[sortField];
-				});
-			}
-			catch(e) {}
-			return data;
-		}
-	};
-	function _dataCopy(data){
+	_dataCopy(data){
 		var _tempdata = new Array(data.length);
 		for(var i=0,n=data.length;i<n;i++){
 			_tempdata[i] = {};
@@ -382,31 +357,36 @@
 		}
 		return _tempdata;
 	}
-
-	// cardTable plugin
-	$.fn.cardTable = function(option) {
-		var args = Array.prototype.slice.call(arguments, 1);
-		var results;
-		this.each(function(){
-			var $this = $(this),
-				data = $this.data('util_cardTable'),
-				options;
-			if (!data) {
-				options = $.extend({}, cardTable.DEFAULTS, $this.data(), typeof option === 'object' && option);
-				$this.data('util_cardTable', new cardTable($this, options));
-			} else {
-				if (typeof option === 'string' && option.charAt(0) !== '_' && typeof data[option] === 'function') {
-					results = data[option].apply(data, args);
-				}
-				else if (typeof option === "object" || !option) {
-					options = $.extend({}, data.options, typeof option === 'object' && option);
-					data.publish.call(data, options);
-				}
-				else {
-					$.error('Method ' + option + ' does not exist on listchart.');
-				}
-			}
-		});
-		return (results != undefined ? results : this);
-	};
-})(jQuery);
+}
+/*
+var data =[
+	{"ID" : 1, "value" : 3, "title" : "商品名", "imgurl" : "/img/reizo/meat/100.png", "limit_ratio": 40, "limit_date" : "2018/08/02"},
+	{"ID" : 2, "value" : 3, "title" : "商品名", "imgurl" : "/img/reizo/meat/100.png", "limit_ratio": 40, "limit_date" : "2018/08/02"}
+];
+var _listParam = {
+	"data" : data,
+	"header" : {
+		"0" : {"field" : "ID", "text" : "ID", "title" : "", "class" : "", "type" : ""},
+		"1" : {"field" : "value", "text" : "value", "title" : "", "class" : "", "type" : ""},
+		"2" : {"field" : "title", "text" : "title", "title" : "", "class" : "", "type" : ""},
+		"3" : {"field" : "imgurl", "text" : "imgurl", "title" : "", "class" : "", "type" : ""},
+		"4" : {"field" : "limit_ratio", "text" : "limit_ratio", "title" : "", "class" : "", "type" : ""},
+		"5" : {"field" : "limit_date", "text" : "limit_date", "title" : "", "class" : "", "type" : ""}
+	},
+	"zeroPaddingSize" : 3,
+	"maxPageSize" : 20,
+	"sortField" : "",
+	"filterVal" : null,
+	"onFilter" : function(){
+		alert("onfileter");
+	},
+	"onButtonClick" : function(){
+		alert("button click");
+	},
+	"onLinkClick" : function(){
+		alert("link click");
+	},
+};
+var	_listTable = new CardTable($("#listTable"), _listParam);
+_listTable.refresh(data);
+*/

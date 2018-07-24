@@ -537,7 +537,7 @@
 				break;
 			case "email" :
 				//半角スペースは除外
-				val = val.replaceAll(" ", "");
+				val = val.replace_all(" ", "");
 				break;
 			case "zenkaku" :
 				val = util.convZenkaku(val);

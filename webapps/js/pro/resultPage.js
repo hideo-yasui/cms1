@@ -383,7 +383,7 @@ function setBarchart(dataSource){
 
 		var _currentVal = util.parseStrToFloat(dataSource[_dataField+"Value"]);
 		var _averageVal = util.parseStrToFloat(dataSource[_dataField+"_avg"]);
-		var _segmentData = JSON.parse(dataSource[_dataField+"_segment"].replaceAll('&quot;', '"'));
+		var _segmentData = JSON.parse(dataSource[_dataField+"_segment"].replace_all('&quot;', '"'));
 		var _currentSet = false;
 		var _averageSet = false;
 
