@@ -159,35 +159,26 @@
 					val = "";
 					form = getOptionString(name, data, 0, 1, template, required);
 					break;
+				default:
+					var val = $(self).attr("value");
+					var title = $(self).attr("title");
+					form = getOptionString(name, [[val, title]], 0, 1, template, required);
+					break;
 		}
 
-		if(!util.isEmpty(accesskey)){
-			$(self).html(form);
-			if(!util.isEmpty(selectValue)) val = selectValue;
-			if(required && val != null){
-				if(util.isEmpty(template)){
-					//select
-					$(self).val(val).change();
-				}
-				else  {
-					//checkbox,radio
-					//$("*[name="+name+"]", self).val([val]).change();
-					$("*[name="+name+"]", self).change();
-				}
+		$(self).html(form);
+		if(!util.isEmpty(selectValue)) val = selectValue;
+		if(required && val != null){
+			if(util.isEmpty(template)){
+				//select
+				$(self).val(val).change();
+			}
+			else  {
+				//checkbox,radio
+				//$("*[name="+name+"]", self).val([val]).change();
+				$("*[name="+name+"]", self).change();
 			}
 		}
-/*
-		if(!util.isEmpty(suggest)){
-		  var dialog = $("#"+formId).attr("type");
-		  if(dialog=="dialog"){
-	    	$(self).select2({
-				dropdownParent: $("[aria-describedby='"+formId+"']")
-			});
-		  }else{
-		  	$(self).select2();
-		  }
-		}
-*/
 	}
 
 	/**
@@ -403,43 +394,48 @@
 					].join("")
 
 		var _row = [
-			'<div class="row">',
-				'<div class="col-lg-12">',
-					'<div class="form-group">',
-						'#_form_#',
-					'</div>',
+			'<div class="row">#_form_#',
+			'</div>'
+		].join("");
+
+
+		var _commonform = [
+			'<div class="#class#">',
+				'<label for="#field#">#text#</label>',
+				'<div class="form-group" #option#>#_form_#',
 				'</div>',
 			'</div>'
 		].join("");
 
-		var _commonform = '<label for="#field#">#text#</label>#_form_#';
 		var _form ={
 			"text" : '<input #attr# class="form-control" />',
 			"textarea" : '<textarea class="textarea col-12" rows=5 #attr#>#default#</textarea>',
 			"select" : '<select class="form-control select2" #attr# style="width:100%;"></select>',
 			"radio" : [
-				'<label>',
-				'<input type="radio" class="flat-red" name="#ID#" id="#ID##VAL#" value="#VAL#" #attr# default="#default#">',
+				'<label class="mr-2">',
+				'<input type="radio" class="flat-red mr-1" name="#ID#" id="#ID##VAL#" value="#VAL#"">',
 				'#NAME#',
 				'</label>'
 				].join("")
 			,
 			"checkbox" : [
-				'<label>',
-				'<input type="checkbox" class="flat-red" name="#ID#" id="#ID##VAL#" value="#VAL#" #attr# default="#default#">',
+				'<label class="mr-2">',
+				'<input type="checkbox" class="flat-red mr-1" name="#ID#" id="#ID##VAL#" value="#VAL#" #attr# default="#default#">',
 				'#NAME#',
 				'</label>'
 				].join("")
 			,
 			"label" : '<h5 for="l3" class="ml3 lbl" #attr#>#default#</h5>',
-			"file" : ['<span  id="filename" alt="#field#" accesskey="filename" style="padding-right:8px;"></span>',
-						'<input type="file" id="#field#" #attr# />',
-						'<a id="btnFileReference" href="javascript:void(0);" accesskey="fileopen" alt="#field#" class="btn icons" style="padding:0 12px 0 2px;display:inline-block;font-size:12px;">',
-							'<span class="icon setting" style="margin:10px;"></span>参照',
-						'</a>',
-						'<a href="javascript:void(0);" accesskey="fileclear" alt="#field#" class="btn icons" style="padding:0 12px 0 2px;display:inline-block;font-size:12px;">',
-							'<span class="icon clean" style="margin:10px;"></span>クリア',
-						'</a>'].join("")
+			"link" : '<a #attr#>#default#</a>',
+			"file" : [
+						'<span id="filename" alt="#field#" accesskey="filename" class="mr-2">ファイルが指定されていません</span>',
+						'<input type="file" id="#field#" #attr# class="hide"/>',
+						'<button href="javascript:void(0);" accesskey="fileopen" alt="#field#" class="btn btn-sm btn-info mr-1">',
+							'<i class="fa fa-folder-open mr-1"></i>参照',
+						'</button>',
+						'<button href="javascript:void(0);" accesskey="fileclear" alt="#field#" class="btn btn-sm btn-info">',
+							'<i class="fa fa-times mr-1"></i>クリア',
+						'</button>'].join("")
 		};
 		var _requiredText = '<span class="right badge badge-danger ml-1">必須</span>';
 		//存在する場合のみ追加する属性
@@ -457,7 +453,8 @@
 			var field = fields[i];
 			if(util.isEmpty(field["type"])) continue;
 			var _type = field["type"];
-			if(_type=="number" || _type=="hidden" || _type=="date" || _type=="postno" || _type=="unktext" || _type=="password" || _type=="listcheckbox"){
+			field["option"] = "";
+			if(_type=="number" || _type=="hidden" || _type=="date" || _type=="postno" || _type=="password" || _type=="listcheckbox"){
 				//
 				switch(_type){
 					case "postno" :
@@ -474,7 +471,6 @@
 				}
 				_type="text";
 			}
-
 			field["_type"] = _type;
 			var form = _form[_type];
 			var attr = "";
@@ -483,7 +479,10 @@
 					attr+=' '+_attr[j]+'="'+field[_attr[j]]+'"';
 				}
 			}
-			if(util.isEmpty(field["class"])) field["class"] = "";
+
+
+			if(util.isEmpty(field["class"])) field["class"] = "col-lg-12";
+			if(util.isEmpty(field["text"])) field["text"] = "　";
 
 			if(!util.isEmpty(field["field"])){
 				if(_type=="label" || _type=="link") attr+=' id="'+field["field"]+'"';
@@ -503,7 +502,8 @@
 					attr+=' edit="'+field["edittype"]["edit"]+'"';
 				}
 			}
-			if(field["type"]!="hidden" && field["type"]!="radio") {
+
+			if(field["type"]!="hidden") {
 				form = _commonform.replace("#_form_#", form);
 				if(!util.isEmpty(field["required"])){
 					//項目見出しに必須の表示をつける
@@ -512,11 +512,20 @@
 					attr+=' required="'+field["required"]+'"';
 				}
 				if(field["type"] == "file") {
-					form = form.replace("#class#", 'dragdropupload" style="text-align:center;padding:12px 4px 12px 4px;border-style:dotted;border-width:1px;border-color:#888;');
+					field["class"]+=' dragdropupload';
 				}
+				form = form.replace("#class#", field["class"]);
 			}
 
 			field["attr"] = attr;
+			if(_type=="radio" || _type=="checkbox"){
+				//#attr# default="#default#
+				field["option"] = attr;
+				field["option"] += ' uitype="radio"';
+				field["option"] += ' required="true"';
+				field["option"] += ' value="'+field["value"]+'"';
+				field["option"] += ' title="'+field["placeholder"]+'"';
+			}
 			row = textFormat(row, field);
 			form = textFormat(form, field);
 			if(!util.isEmpty(field["subtitle"])){
@@ -524,7 +533,7 @@
 			if(field["type"]=="description"){
 				rowDom.push({ "row" : "#_form_#", "form" : [form]});
 			}
-			else if(util.isEmpty(field["text"]) || field["type"]=="hidden"){
+			else if(field["text"]==="　" || field["type"]=="hidden"){
 				if(rowDom.length>0) rowDom[rowDom.length-1]["form"].push(form);
 				else rowDom.push({ "row" : "#_form_#", "form" : [form]});
 			}
@@ -540,7 +549,7 @@
 
 		var _button_tpl = [
 			'<button type="button" class="btn btn-outline-primary mr-2" #attr#>',
-				'<i class="fa fa-#class#"></i>#text#',
+				'<i class="fa fa-#class# mr-1"></i>#text#',
 			'</button>'
 		].join('');
 		var _buttonHtml = "";

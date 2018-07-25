@@ -5,13 +5,21 @@ class comService extends Controller
 	protected $auth_actions = array('');
 
 	public function search($params){
+		$values = $this->_auth_token();
+		$auth_info = false;
+		if($values["status"] ==="success") {
+			$is_auth = true;
+		}
+/*
 		$result = $this->application->dbi->load_cache();
 		if($result!==null) return $result;
+	*/
 		$result = $this->badRequestResponce();
 		if(isset($params['query_code'])){
 			if ($this->request->isGet()) {
-				$result = $this->application->dbi->execConfigSearch($params['query_code'], $_GET);
-				$this->application->dbi->save_cache($result);
+				$params = array_merge($params, $_GET);
+				$result = $this->application->dbi->execConfigSearch($params['query_code'], $params);
+				//$this->application->dbi->save_cache($result);
 			}
 		}
 		return $result;
@@ -21,8 +29,10 @@ class comService extends Controller
 		$result = $this->badRequestResponce();
 		if(isset($params['query_code'])){
 			if(isset($params['cache']) && $params['cache']==='use'){
+				/*
 				$result = $this->application->dbi->load_cache();
 				if($result!==null) return $result;
+				*/
 			}
 			$path = $params['query_code'];
 			if (!empty($params["method"])) $params['query_code'] .= '_'.$params['method'];
@@ -33,14 +43,20 @@ class comService extends Controller
 			else if ($this->request->isPost()) {
 				$params = array_merge($params, $_POST);
 			}
-			$result = $this->application->dbi->execConfigQuery($params['query_code'], $params);
+			$system = $this->system;
+			if(isset($params['system'])){
+				$system = $params['system'];
+			}
+			$result = $this->application->dbi->execConfigQuery($params['query_code'], $params, $system);
 
+/*
 			if(isset($params['cache']) && $params['cache']==='use'){
 				$this->application->dbi->save_cache($result);
 			}
 			if(isset($params['cache']) && $params['cache']==='clear'){
 				$this->application->dbi->clear_cache($path);
 			}
+*/
 		}
 		return $result;
 	}

@@ -1,3 +1,12 @@
+<?php
+if(isset($data["data"]["get_headermenu"])){
+	$headermenu = $data["data"]["get_headermenu"];
+}
+else {
+	$headermenu = array();
+}
+?>
+
 <!-- Navbar -->
 <nav class="main-header navbar navbar-expand bg-white navbar-light border-bottom">
 <!-- Left navbar links -->
@@ -5,12 +14,17 @@
 	<li class="nav-item">
 		<a class="nav-link" data-widget="pushmenu" href="#"><i class="fa fa-bars"></i></a>
 	</li>
+<?php
+for($i=0,$n=count($headermenu);$i<$n;$i++){
+	$name = $headermenu[$i]["NAME"];
+	$option = $headermenu[$i]["OPTION_STRING"];
+echo <<<EOT
 	<li class="nav-item d-none d-sm-inline-block">
-		<a href="#" class="nav-link">#MENU1#</a>
+		<a href="/$option" class="nav-link">$name</a>
 	</li>
-	<li class="nav-item d-none d-sm-inline-block">
-		<a href="#" class="nav-link">#MENU2#</a>
-	</li>
+EOT;
+}
+?>
 </ul>
 
 <!-- Right navbar links -->

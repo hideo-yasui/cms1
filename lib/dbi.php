@@ -251,7 +251,7 @@ class Dbi
 		$path = str_replace('|', '_', $path);
 		$path = str_replace('?', '/', $path);
 		$paths = explode('/', $path);
-		$path = "";
+		$path = $_SERVER["SERVER_NAME"].'/';
 		for($i=2;$i<count($paths);$i++){
 			$path.=$paths[$i].'/';
 		}

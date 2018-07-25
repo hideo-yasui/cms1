@@ -163,6 +163,7 @@ class comView extends comService
 		if(!strrpos($contents, '.')) $contents.='.php';
 
 		//m_code.GROUP_VAL=SYS_CONFIGのCODE_VAL、CODE_NAMEを取得し、表示用変数として利用
+		/*
 		$values = $this->application->dbi->execConfigQuery("get_config");
 		$ret["status"] = $values["status"];
 		$ret["message"] = $values["message"];
@@ -171,6 +172,7 @@ class comView extends comService
 			$this->application->dbi->addConfigLog("service", "not found/get_config error");
 			$this->showPageNotFound();
 		}
+		*/
 		//CSRF対策用token
 		$data["token"] = getToken();
 		$_SESSION["token"] = $data["token"];
@@ -184,8 +186,10 @@ class comView extends comService
 		$data["_system"] = $this->application->system_info;
 		if(isset($values["data"])){
 			$data["config"] = array();
-			for($i=0;$i<count($values["data"]);$i++){
-				$data["config"][$values["data"][$i]["CODE_VAL"]] =$values["data"][$i]["CODE_NAME"];
+			foreach($values["data"] as $i => $v){
+				if(isset($v["CODE_VAL"]) && isset($v["CODE_NAME"])){
+					$data["config"][$v["CODE_VAL"]] =$v["CODE_NAME"];
+				}
 			}
 		}
 
@@ -211,12 +215,12 @@ class comView extends comService
 
 	//404相当ページの表示
 	private function showPageNotFound(){
-		view("notfound.html", array());
+		view("/control/notfound.php", array());
 		$this->exitProc();
 	}
 	//403相当ページの表示
 	private function showPageForbidden(){
-		view("forbidden.html", array());
+		view("/control/forbidden.php", array());
 		$this->exitProc();
 	}
 	//セッションタイムアウトページの表示

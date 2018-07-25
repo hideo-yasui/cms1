@@ -54,10 +54,7 @@ class comDbi extends Dbi
 		$result = "";
 		$wherequery = "";
 		$wherequery = $wherequery." WHERE CODE=".$this->_esn_sq($query_code)." and DELETE_FLAG=0";
-		/*
-		$wherequery = $wherequery." AND (SYSTEM_CODE=".$this->_esn_sq($this->system);
-		$wherequery = $wherequery." OR 'control' = ".$this->_esn_sq($this->system).")";
-		*/
+		$wherequery = $wherequery." AND SYSTEM_CODE =".$this->_esn_sq($this->system).'';
 		$wherequery = $wherequery." ORDER BY SORT_NO";
 
 		$count = 0;
@@ -141,20 +138,17 @@ class comDbi extends Dbi
 		);
 		return $values;
 	}
-	public function execConfigQuery($query_code, array $data = null){
+	public function execConfigQuery($query_code, array $data = null, $system='control'){
 	  // init return values
 		$status      = "success";
 		$message     = "";
 		$description = "";
 		$ret         = "";
-
+		if(empty($system)) $system =$this->system;
 		// get $m_query by $query_code
 		$wherequery  = " WHERE CODE =" . $this->_esn_sq($query_code);
 		$wherequery = $wherequery." AND DELETE_FLAG = 0";
-/*
-		$wherequery = $wherequery." AND SYSTEM_CODE in(".$this->_esn_sq($this->config_db);
-		$wherequery = $wherequery.", ".$this->_esn_sq($this->system).")";
-*/
+		$wherequery = $wherequery." AND SYSTEM_CODE =".$this->_esn_sq($system).'';
 		$wherequery = $wherequery." ORDER BY SORT_NO";
 		$query = "SELECT * FROM ".$this->config_db.".m_query ".$wherequery;
 		$ret = $this->getDatatable($query);
@@ -278,7 +272,7 @@ class comDbi extends Dbi
 		$logs["REMOTE_PORT"] = $_SERVER["REMOTE_PORT"];
 		$logs["REQUEST_METHOD"] = $_SERVER["REQUEST_METHOD"];
 		$logs["REQUEST_URI"] = $_SERVER["REQUEST_URI"];
-		$this->execConfigQuery('t_logs_ins', $logs);
+		//$this->execConfigQuery('t_logs_ins', $logs);
 		@TXT_LOG($logType,$_SERVER['SCRIPT_NAME'], basename(__FILE__),__LINE__, "$this->addConfigLog",$logTitle,$logRemark);
 	}
 	public function addConfigFile($file, $remark){
@@ -294,7 +288,7 @@ class comDbi extends Dbi
 		return $this->execConfigQuery('m_file_ins', $data);
 	}
 	public function exportFile($query_code, $params, $outputfile="", $encode=""){
-		$export_data = $this->execConfigQuery($query_code, $params);
+		$export_data = $this->execConfigQuery($query_code, $params, $this->system);
 		if($export_data["status"] !=="success"){
 			return $export_data;
 		}
@@ -714,7 +708,7 @@ class comDbi extends Dbi
 		//各インポート処理ごと独自にチェックするクエリを実行する
 		//列に対し、型の妥当性チェック、値チェック、他テーブルの存在チェックなどを行う
 		//チェッククエリ側で一時テーブルの_rstを更新する
-		$ret = $this->execConfigQuery('upd_'.$temp_table);
+		$ret = $this->execConfigQuery('upd_'.$temp_table, null, $this->system);
 		if($ret["status"]!== "success"){
 			$result = array(
 				'status' => "failed",

@@ -69,7 +69,6 @@
 	fileUI.prototype.clear = function() {
 		this.setFile(null);
 		$(this.element).val("");
-		$(".form__error", $(this.element).parent().parent()).remove();
 		this.change();
 	};
 	/**

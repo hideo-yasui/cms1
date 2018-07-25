@@ -30,7 +30,7 @@ class CardTable {
 				'</div>',
 			'</li>',
 		].join('');
-		this._edit = '<button href="javascript:void(0);" class="btn btn-default btn-sm float-right" accesskey="rowedit"><i class="fa fa-edit"></i></button>';
+		this._edit = '<button href="javascript:void(0);" alt="dialog" class="btn btn-default btn-sm float-right" accesskey="rowedit"><i class="fa fa-edit"></i></button>';
 		this._copy = '<button href="javascript:void(0);" class="btn btn-default btn-sm float-right" accesskey=""><i class="fa fa-utensils"></i></button>';
 		this._delete = '<button href="javascript:void(0);" class="btn btn-default btn-sm float-right" accesskey="rowdelete"><i class="fa fa-trash-alt"></i></button>';
 		this._table = null;

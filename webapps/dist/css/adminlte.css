@@ -12113,15 +12113,16 @@ label:not(.form-check-label):not(.custom-file-label) {
 	/*2018/07/19 画像の上にラベルのせる対応*/
 	position: relative;
 	text-align: center;
+	z-index:2;
 }
 .mailbox-attachment-icon .icon-label {
 	position: absolute;/*絶対配置*/
 	color: white;/*文字は白に*/
-	top: 0;
-	left: 0;
-	padding:10px;
+	bottom: -12px;
+	right: 10px;
 	text-align:left;
 	/*
+	padding:10px;
 	background-color:rgba(100,100,100,0.2);
 	background-color:rgba(255,255,255,0.5);
 	*/
@@ -12138,7 +12139,9 @@ label:not(.form-check-label):not(.custom-file-label) {
 	max-width: 60%;
 	height: auto;
 }
-
+.mailbox-attachment-icon h5 {
+	text-align:left;
+}
 /*
  * Page: Lock Screen
  * -----------------

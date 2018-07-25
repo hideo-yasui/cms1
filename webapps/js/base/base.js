@@ -90,9 +90,11 @@
 				"onChange" : function(element, fileData){
 					var name = $(element).attr("name");
 					var accesskey = $(element).attr("accesskey");
-					$("span[alt="+name+"][accesskey=filename]", $("#"+formId)).html(fileData["name"]);
-					$("span[alt="+name+"][accesskey=filesize]", $("#"+formId)).html(fileData["size"]);
-					$("span[alt="+name+"][accesskey=filetype]", $("#"+formId)).html(fileData["type"]);
+					var filename = fileData["name"];
+					if(util.isEmpty(filename)) filename = "ファイルが指定されていません";
+					$("*[alt="+name+"][accesskey=filename]", $("#"+formId)).html(filename);
+					$("*[alt="+name+"][accesskey=filesize]", $("#"+formId)).html(fileData["size"]);
+					$("*[alt="+name+"][accesskey=filetype]", $("#"+formId)).html(fileData["type"]);
 					switch(accesskey){
 						case "upload":
 							fileUpload(name);
@@ -118,8 +120,6 @@
 			//console.log("accesskey="+accesskey+",alt="+alt+",target="+target);
 			switch(accesskey){
 				case "fileclear":
-					$("#btnFileReference", $("#"+formId)).show();
-					$("#btnFileUpload", $("#"+formId)).hide();
 					_cache["_fileUI"][alt].fileUI("clear");
 					break;
 				case "fileopen":
@@ -187,11 +187,17 @@
 			var _defaultSelect = $(this).attr("defaultSelect");
 			dom.selectFormLoad(_currentForm, this, _defaultSelect, null, _currentRequest);
 		});
-		$("div[accesskey][uitype=radio]", $("#"+formId)).each(function(i){
+		$("div[uitype=radio]", $("#"+formId)).each(function(i){
 			var _defaultSelect = $(this).attr("defaultSelect");
 			dom.selectFormLoad(_currentForm, this, _defaultSelect, $(this).html(), _currentRequest);
 		});
 		$("select.select2", $("#"+formId)).select2();
+
+		//Flat red color scheme for iCheck
+		$('input[type="checkbox"].flat-red, input[type="radio"].flat-red').iCheck({
+			checkboxClass: 'icheckbox_flat-green mr-1',
+			radioClass   : 'iradio_flat-green mr-1'
+		})
 
 		/*
 		//バーコードフォーム
@@ -752,11 +758,16 @@
 	//編集操作時の制御（編集・削除・コピー）
 	function editProc(button, data){
 		var _accesskey = $( button).attr("accesskey");
+		var _alt = $( button).attr("alt");
+		var _pageId = _editPageId;
+		if(_alt==="dialog"){
+			_pageId = _dialogId;
+		}
 		if(util.isEmpty(_accesskey)) return;
 		if(_accesskey=="rowedit" || _accesskey=="rowcopy"){
 			var isEdit = false;
 			if(_accesskey=="rowedit") isEdit = true;
-			showEditPage(_editPageId, _currentRequest["query_code"]+"_add",_currentRequest["query_code"], data, isEdit);
+			showEditPage(_pageId, _currentRequest["query_code"]+"_add",_currentRequest["query_code"], data, isEdit);
 		}
 		else if(_accesskey == "rowdelete"){
 			service.confirm("C_POST_DEL", "", function(){

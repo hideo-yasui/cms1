@@ -207,7 +207,7 @@ class ListTable extends CardTable{
 							val = this._edit;
 							break;
 						case "delete" :
-							val = _delete;
+							val = this._delete;
 							break;
 					}
 					vals += val;
@@ -234,7 +234,7 @@ class ListTable extends CardTable{
 		if(this._table.find('a:not(.btn)').length){
 			this._table.find('a:not(.btn)').on("click", function(event){
 				event.preventDefault();
-				var idx = $("#__index__", $(this).parent().parent().parent()).val();
+				var idx = $("#__index__", $(this).parent().parent()).val();
 				if (idx >= 0) {
 					_self.options.onLinkClick.call(undefined, $(this), _self.tempdata[idx]);
 				}
