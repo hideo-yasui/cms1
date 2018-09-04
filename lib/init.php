@@ -11,7 +11,7 @@
 //---------------------------------------------------------------------------
 $gPathList = array() ;
 //$gPathList["svroot"] = $_SERVER["DOCUMENT_ROOT"] ;
-$gPathList["svroot"] = "/vagrant/cms1/webapps";
+$gPathList["svroot"] = dirname(__FILE__)."/../webapps";
 
 $gPathList["sv_top"] = substr( $gPathList["svroot"], 0, strrpos( $gPathList["svroot"], "/" ) ) ;
 $gPathList["u_home"] = substr( $gPathList["sv_top"], 0, strrpos( $gPathList["sv_top"], "/" ) ) ;
