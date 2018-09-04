@@ -23,7 +23,8 @@
 		paramPageLoad : paramPageLoad,
 		confirmMessage : confirmMessage,
 		alertMessage : alertMessage,
-		errorMessage : errorMessage
+		errorMessage : errorMessage,
+		setFileForm : setFileForm
 	};
 
 	/**
@@ -70,8 +71,6 @@
 				var param_field = $(self).attr("param_field");
 				var data = front.getFormValue(formId);
 				var _req = {};
-				if(data["PID"] && !util.isEmpty(data["PID"])) _req["PID"] = data["PID"];
-				if(param["PID"] && !util.isEmpty(param["PID"])) _req["PID"] = param["PID"];
 				if(!util.isEmpty(param_field)){
 					if(data[param_field] && !util.isEmpty(data[param_field])) _req[param_field] = data[param_field];
 					if(param[param_field] && !util.isEmpty(param[param_field])) _req[param_field] = param[param_field];
@@ -401,7 +400,7 @@
 
 		var _commonform = [
 			'<div class="#class#">',
-				'<label for="#field#">#text#</label>',
+				'<label for="#field#">#field_title#</label>',
 				'<div class="form-group" #option#>#_form_#',
 				'</div>',
 			'</div>'
@@ -426,6 +425,7 @@
 				].join("")
 			,
 			"label" : '<h5 for="l3" class="ml3 lbl" #attr#>#default#</h5>',
+			"image" : '<img class="mw-64px" #attr# src="#default#"></img>',
 			"link" : '<a #attr#>#default#</a>',
 			"file" : [
 						'<span id="filename" alt="#field#" accesskey="filename" class="mr-2">ファイルが指定されていません</span>',
@@ -440,7 +440,7 @@
 		var _requiredText = '<span class="right badge badge-danger ml-1">必須</span>';
 		//存在する場合のみ追加する属性
 		var _attr = ["target", "alt", "accesskey",
-					"name", "type","placeholder","multiple",
+					"name", "type","placeholder","data-placeholder", "multiple",
 					"style","uitype","inputtype","value",
 					"maxlength","minlength","maxvalue","minvalue","stepvalue","defaultDate", "defaultSelect",
 					"query", "code_field", "name_field", "param_field",
@@ -465,7 +465,7 @@
 					case "listcheckbox":
 						field["type"] = "hidden";
 						field["multiple"] = "multiple";
-						var selectData = listTable.listtable("getSelectData", field["alt"]);
+						var selectData = listTable.getSelectData(field["alt"]);
 						field["default"] = selectData;
 						break;
 				}
@@ -474,6 +474,11 @@
 			field["_type"] = _type;
 			var form = _form[_type];
 			var attr = "";
+			if(_type=="select" && field["placeholder"]){
+				field["data-placeholder"] = field["placeholder"];
+				delete field["placeholder"];
+			}
+
 			for(var j=0,m=_attr.length;j<m;j++){
 				if(!util.isEmpty(field[_attr[j]])){
 					attr+=' '+_attr[j]+'="'+field[_attr[j]]+'"';
@@ -482,7 +487,10 @@
 
 
 			if(util.isEmpty(field["class"])) field["class"] = "col-lg-12";
-			if(util.isEmpty(field["text"])) field["text"] = "　";
+			field["field_title"] = "　";
+
+			if(!util.isEmpty(field["text"])) field["field_title"] = field["text"];
+			if(!util.isEmpty(field["subtitle"])) field["field_title"] = field["subtitle"];
 
 			if(!util.isEmpty(field["field"])){
 				if(_type=="label" || _type=="link") attr+=' id="'+field["field"]+'"';
@@ -508,7 +516,7 @@
 				if(!util.isEmpty(field["required"])){
 					//項目見出しに必須の表示をつける
 					//フォームが複数ある場合は、最初フォーム設定の有無にて決定する
-					form = form.replace('#text#', '#text#'+_requiredText);
+					form = form.replace('#field_title#', '#field_title#'+_requiredText);
 					attr+=' required="'+field["required"]+'"';
 				}
 				if(field["type"] == "file") {
@@ -528,12 +536,12 @@
 			}
 			row = textFormat(row, field);
 			form = textFormat(form, field);
-			if(!util.isEmpty(field["subtitle"])){
-			}
+			/*
 			if(field["type"]=="description"){
 				rowDom.push({ "row" : "#_form_#", "form" : [form]});
 			}
-			else if(field["text"]==="　" || field["type"]=="hidden"){
+			*/
+			if(util.isEmpty(field["text"]) || field["type"]=="hidden"){
 				if(rowDom.length>0) rowDom[rowDom.length-1]["form"].push(form);
 				else rowDom.push({ "row" : "#_form_#", "form" : [form]});
 			}
@@ -723,6 +731,14 @@
 				if(!util.isEmpty(inputtype)){
 					$(this).blur();
 				}
+
+				var accesskey = $(this).attr("accesskey");
+				var alt = $(this).attr("alt");
+				if(type=="hidden" && accesskey=="fileid" && !util.isEmpty(alt)){
+					if($("input[name="+alt+"]").attr("type")=="file"){
+						setFileForm(form, alt, val);
+					}
+				}
 			});
 			$("div, span, td, .lbl", $("#"+form)).each(function(){
 				var field = $(this).attr("id");
@@ -752,6 +768,32 @@
 		}
 	}
 
+	function setFileForm(formId, name, fileid){
+		if(util.isEmpty(formId)) return;
+		if(util.isEmpty(name)) return;
+		if(util.isEmpty(fileid)) return;
+		var url = "/download/"+fileid;
+		$("a[alt="+name+"][accesskey=fileid]", $("#"+formId)).html(fileid);
+		$("a[alt="+name+"][accesskey=fileid]", $("#"+formId)).attr("href", url);
+		$("input[type=hidden][alt="+name+"][accesskey=fileid]", $("#"+formId)).val(fileid);
+		$("img[alt="+name+"][accesskey=preview]", $("#"+formId)).attr("title", fileid);
+		$("img[alt="+name+"][accesskey=preview]", $("#"+formId)).attr("src", "/getfile/"+fileid);
+		$("img[alt="+name+"][accesskey=preview]", $("#"+formId)).show();
+
+		/*
+		$("input[type=hidden]", $("#"+_currentForm)).each(function(){
+			var field = $(this).attr("name");
+			var val = $("span[accesskey='"+field+"']", $("#"+_currentForm)).html();
+			if(field=="filesize") val = result["fsize"];
+			if(field=="fileid") val = fileid;
+			if(!util.isEmpty(val)) $(this).val(val);
+			else {
+				val = $("a[accesskey="+field+"]", $("#"+_currentForm)).html();
+				if(!util.isEmpty(val)) $(this).val(val);
+			}
+		});
+		*/
+	}
 
 	root.dom = $.extend({}, root.dom, public_method);
 

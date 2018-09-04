@@ -34,8 +34,10 @@
 		var _req = {};
 		$("input, textarea, select", $("#"+formId)).each(function(){
 			var field = $(this).attr("name");
-			var val = _getFormValue(this);
-			_req[field] = val;
+			if(field.indexOf("#")<0){
+				var val = _getFormValue(this);
+				_req[field] = val;
+			}
 		});
 		$("input[type=checkbox]:checked,input[type=radio]:checked", $("#"+formId)).each(function(){
 			var field = $(this).attr("name");
@@ -257,7 +259,7 @@
  			}
  		}
 
- 		if(selecter.tagName=="INPUT" &&_isSuccess && !isscan && !isfile && !util.isEmpty(val)){
+ 		if(_isSuccess && !isscan && !isfile && !util.isEmpty(val)){
  			//scan ,fileの場合は文字系のチェックはしない
  			//主に文字入力系のチェック
  			if(!util.isEmpty(minlength) && vallen<minlength){
@@ -363,10 +365,15 @@
  				_isSuccess = false;
  				messageCode = "ZKANA";
  			}
- 			else if(!util.isEmpty(inputtype) && inputtype=="email" && !util.isMail(val)){
+			else if(!util.isEmpty(inputtype) && inputtype=="email" && !util.isMail(val)){
  				//メール形式チェック
  				_isSuccess = false;
  				messageCode = "EML";
+ 			}
+			else if(!util.isEmpty(inputtype) && inputtype=="json" && !util.isJson(val)){
+ 				//JSON形式チェック
+ 				_isSuccess = false;
+ 				messageCode = "JSON";
  			}
  		}
  		if(messageCode!="") messageCode = "E_VALIDATE_"+messageCode;
@@ -509,7 +516,8 @@
 	* @return {void} return nothing
 	*/
 	function inputAdjust(val, maxl, minl, inputtype){
-		if(inputtype!="zenkaku" && inputtype!="zenkakukana"){
+		if(inputtype!="zenkaku" && inputtype!="zenkakukana"
+			&& inputtype!="json" && inputtype!="sql"){
 			//半角変換
 			val = util.convHankaku(val);
 		}
@@ -548,6 +556,59 @@
 				break;
 			case "date" :
 				if(!util.isDate(val)) val = "";
+				break;
+			case "json" :
+				if(!util.isJson(val) && util.isJson("{"+val+"}")) val = "{"+val+"}";
+				break;
+			case "sql" :
+				val = val.replace_all("\n", " ");
+				val = val.replace_all("  ", " ");
+				val = val.replace_all(" limit ", " LIMIT ");
+				val = val.replace_all(" offset ", " OFFSET ");
+				val = val.replace_all(" where ", " WHERE ");
+				val = val.replace_all(" and ", " AND ");
+				val = val.replace_all(" or ", " OR ");
+				val = val.replace_all(" outer", " OUTER");
+				val = val.replace_all(" inner", " INNER");
+				val = val.replace_all(" on ", " ON ");
+				val = val.replace_all(" in ", " IN ");
+				val = val.replace_all(" is ", " IS ");
+				val = val.replace_all(" order ", " ORDER ");
+				val = val.replace_all(" by", " BY");
+				val = val.replace_all(" from", " FROM");
+				val = val.replace_all(" like", " LIKE");
+				val = val.replace_all(" set ", " SET ");
+				val = val.replace_all("values(", "VALUES(");
+				val = val.replace_all("select ", "SELECT ");
+				val = val.replace_all("update ", "UPDATE ");
+				val = val.replace_all("delete ", "DELETE ");
+				val = val.replace_all("case ", "CASE ");
+				val = val.replace_all("when ", "WHEN ");
+				val = val.replace_all(" then", " THEN");
+				val = val.replace_all(" join", " JOIN");
+				val = val.replace_all(" end", " END");
+				val = val.replace_all(" as", " AS");
+				val = val.replace_all(" else ", " ELSE ");
+				val = val.replace_all('/*if', "\n"+'/*if');
+				val = val.replace_all('*/', '*/'+"\n");
+				val = val.replace_all('/*end if*/', "\n"+'/*end if*/'+"\n");
+				val = val.replace_all("SELECT", "SELECT\n");
+				val = val.replace_all(" INNER", "\nINNER");
+				val = val.replace_all(" ELSE ", "\nELSE ");
+				val = val.replace_all(" OUTER", "\nOUTER");
+				val = val.replace_all(" WHEN", "\nWHEN");
+				val = val.replace_all("CASE\nWHEN", "CASE WHEN");
+				val = val.replace_all(" VALUES(", "\nVALUES(");
+				val = val.replace_all(" SET ", " SET\n");
+				val = val.replace_all("FROM ", "\nFROM ");
+				val = val.replace_all("ORDER ", "\nORDER ");
+				val = val.replace_all("WHERE ", "\nWHERE ");
+				val = val.replace_all("AND ", "\nAND ");
+				val = val.replace_all("OR ", "\nOR ");
+				val = val.replace_all(', ', ','+"\n");
+
+				val = val.replace_all("\n \n", "\n");
+				val = val.replace_all("\n\n", "\n");
 				break;
 		}
 		if(inputtype=="integer"){

@@ -517,7 +517,64 @@ class App extends Controller
     function createAuthCode($email) {
     	return sha1($email . COM_getRandomKey(12) . $GLOBALS['nowDateTime']);
     }
+    //========================================================================================================
+    // ランダムなアルファベットと数字でパスワードを生成
+    // $keta：生成するパスワードの桁数
+    // 戻り値：生成したメンバーパスワード
+    //--------------------------------------------------------------------------------------------------------
+    function COM_getRandomKey( $keta )
+    {
+    	$pLst = array("A","B","C","D","E","F","G","H","J","K","L","M","N","P","Q","R","S","T","U","V","W","X","Y","Z","a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z","0","1","2","3","4","5","6","7","8","9","_") ;
+    	$retVal = COM_getRandomString( $pLst, $keta ) ;
+    	return( $retVal ) ;
+    }
+    //========================================================================================================
+    // 指定されたリストから指定桁数分ランダムで文字列を生成
+    // $pLst：生成するランダム文字列のリスト
+    // $keta：生成するランダム文字列の桁数
+    // 戻り値：生成したランダム文字列
+    //--------------------------------------------------------------------------------------------------------
+    function COM_getRandomString( $pLst, $keta )
+    {
+    	$maxRan = ( count( $pLst ) - 1 ) ;
+    	srand((double)microtime()*1000000);
+    	$retVal = "" ;
+    	for ( $cnt = 0; $cnt < $keta; $cnt++ ) {
+    		$gPos = rand( 0, $maxRan ) ;
+    		$retVal = sprintf( "%s%s", $retVal, $pLst[$gPos] ) ;
+    	}
+    	return( $retVal ) ;
+    }
+    //====================================================================================
+    // ログイン PW を暗号化ルーチンに従い、暗号化する
+    // $pw：パスワード
+    // 戻り値：暗号化されたパスワード
+    //------------------------------------------------------------------------------------
+    function LC_COM_getPWencode( $pw )
+    {
+    	$pw_md5 = md5( $pw ) ;
+    	$pw_sha1 = sha1( $pw ) ;
+    	$randomKey = sprintf( "bX15XTTn-Cykinso-Mykinso-5LU5ZGXI" ) ;
+    	$key_sh1 = sha1( $randomKey ) ;
 
+    	$pw_md_top = substr( $pw_md5, 0, 16 ) ;
+    	$pw_md_bak = substr( $pw_md5, 16 ) ;
+    	$pw_sh_top = substr( $pw_sha1, 0, 20 ) ;
+    	$pw_sh_bak = substr( $pw_sha1, 20 ) ;
+    	$key_top = substr( $key_sh1, 0, 20 ) ;
+    	$key_bak = substr( $key_sh1, 20 ) ;
+
+    	/***
+    	$retVal = sprintf( "%s / %s / %s / %s / %s / %s", $pw_md_top, $pw_md_bak, $pw_sh_top, $pw_sh_bak, $key_top, $key_bak ) ;
+    	printf( "pw_md5 : [%s]<br>\n", $pw_md5 ) ;
+    	printf( "pw_sha1 : [%s]<br>\n", $pw_sha1 ) ;
+    	printf( "key_sh1 : [%s]<br>\n", $key_sh1 ) ;
+    	printf( "retVal : [%s]<br>\n", $retVal ) ;
+    	***/
+    	$retVal = sprintf( "%s%s%s%s%s%s", $key_bak, $pw_sh_bak, $pw_md_bak, $key_top, $pw_md_top, $pw_sh_top ) ;
+
+    	return( $retVal ) ;
+    }
     /**
      * API用 共通レスポンス
      * @param string [$status]

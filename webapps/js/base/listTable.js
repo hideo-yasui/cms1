@@ -6,6 +6,7 @@ class ListTable extends CardTable{
 		super(element, options);
 
 		this.parent_dom = 'table';
+		this._publish_dom = '<table class="table table-bordered table-striped"></table>';
 		this._edit = '<button type="button" class="btn btn-outline-success btn-sm" accesskey="rowedit"><i class="fa fa-edit"></i></button>';
 		this._copy = '<button type="button" class="btn btn-outline-primary btn-sm" accesskey="rowcopy"><i class="fa fa-clone"></i></button>';
 		this._delete = '<button type="button" class="btn btn-outline-danger btn-sm" accesskey="rowdelete"><i class="fa fa-minus-circle"></i></button>';
@@ -102,37 +103,7 @@ class ListTable extends CardTable{
 					attribute += ' title="'+this.tempdata[i][title]+'"';
 					settitle = true;
 				}
-				var _visible = this.options.header[key]["visible"];
-				var _isVisible = true;
-				//if field have multiple outputs then visible propety setting
-				//usage visible setting is visible : {field : exist of this.tempdata[i][field] , value : equal this.tempdata[i][field]
-				if(_visible && _visible != null && _visible["field"] != null &&  _visible["value"] != null ){
-					_isVisible = false;
-					if(!this.tempdata[i][_visible["field"]]){
-						if(typeof this.tempdata[i][_visible["field"]] == "number"){
-							this.tempdata[i][_visible["field"]] = 0;
-						}
-						else {
-							this.tempdata[i][_visible["field"]] = "";
-						}
-					}
-					if(!_visible["fomula"]) _visible["fomula"] = "equal";
-					switch(_visible["fomula"]){
-						case "equal":
-							if(this.tempdata[i][_visible["field"]] == _visible["value"]) _isVisible = true;
-							break;
-						case "not":
-							if(this.tempdata[i][_visible["field"]] != _visible["value"]) _isVisible = true;
-							break;
-						case "greater":
-							if(util.diffVal(this.tempdata[i][_visible["field"]], _visible["value"]) > 0) _isVisible = true;
-							break;
-						case "less":
-							if(util.diffVal(this.tempdata[i][_visible["field"]], _visible["value"]) < 0) _isVisible = true;
-							break;
-					}
-				}
-				if(!_isVisible) continue;
+				if(this.__isVisible(this.tempdata[i], this.options.header[key]["visible"])===false) continue;
 				for(var j=0,m=fields.length;j<m;j++){
 					var field = fields[j];
 

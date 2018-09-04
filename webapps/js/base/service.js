@@ -9,7 +9,7 @@
 	"use strict";
 	var _loadTimer = null;
 	var _loading = null;
-	var _requestCache = [];
+	var _requestCache = {};
 	var _cache = {};
 	//list_table用のIF
 	var _isDebug = false;
@@ -26,13 +26,13 @@
 		getAjax  : getAjax,
 		postAjax : postAjax,
 		uploadAjax : uploadAjax,
-        downloadAjax : downloadAjax,
+    downloadAjax : downloadAjax,
 		fileDownload : fileDownload,
 		extendRequestJson  : extendRequestJson,
 		error : errorMessage,
 		alert : alertMessage,
 		confirm : confirmMessage,
-		sendMail : sendMail
+		clearRequestCache : clearRequestCache
 	};
 	startProc();
 	//クロージャー
@@ -56,6 +56,7 @@
 				_cache["userSetting"][key] = data[key];
 			}
 		}
+		loadRequestCache();
 		setQueryParam();
 		setGroupCode();
 	}
@@ -70,7 +71,7 @@
 		if(_loadTimer!=null){
 			clearTimeout(_loadTimer);
 		}
-		_loadTimer = setTimeout(loadOpen, _cache["userSetting"]["loadingStart"]);
+		_loadTimer = setTimeout(loadOpen, 1);
 	}
 	/**
 	* ローディング終了
@@ -140,6 +141,7 @@
 			location.href = "/logout";
 		}
 	}
+
 	/**
     * URLパラメータ設定
 	* https://domain?p1=a&p2=b&p3=c
@@ -223,7 +225,43 @@
     * @method setGroupCode
     * @return {void} return nothing
     */
-	function setGroupCode(){
+		function setGroupCode(){
+			if(util.isEmpty(_cache["GROUP_CODE"]) || util.isEmpty(_cache["GROUP"])){
+				var ret = getAjax(false, "/getgroupcode", {},
+					function(result, st, xhr) {
+						_cache["GROUP"] = [];
+						_cache["GROUP_CODE"] = {};
+						var data =  result["data"];
+						if(data && data.length >=0){
+							var count = data.length;
+							for(var i=0;i<count;i++){
+								var group = data[i]["GROUP_VAL"];
+								var gname = data[i]["GROUP_NAME_ENC"];
+								if(_cache["GROUP"].length<1 || _cache["GROUP"][_cache["GROUP"].length-1][0]!=group){
+									_cache["GROUP"].push([group, gname]);
+								}
+								var code = data[i]["CODE_VAL"];
+								var cname = data[i]["CODE_NAME_ENC"];
+								var cremark = data[i]["CODE_REMARK_ENC"];
+								var pgroup = data[i]["PARENT_GROUP"];
+								var pcode = data[i]["PARENT_CODE"];
+								if(!_cache["GROUP_CODE"][group]) {
+									_cache["GROUP_CODE"][group] = {};
+									_cache["GROUP_CODE"][group]["name"] = gname;
+									_cache["GROUP_CODE"][group]["code"] = [];
+								}
+								_cache["GROUP_CODE"][group]["code"].push([code, cname, cremark, pgroup,pcode]);
+							}
+						}
+					},
+					function(xhr, st, err) {
+						alert("getGroupCode\n"+err.message+"\n"+xhr.responseText);
+					}, true
+				);
+			}
+		}
+
+	function setGroupCode2(){
 		_cache["GROUP"] = util.getLocalData("GROUP");
 		_cache["GROUP_CODE"] = util.getLocalData("GROUP_CODE");
 		if(util.isEmpty(_cache["GROUP_CODE"]) || util.isEmpty(_cache["GROUP"])){
@@ -388,28 +426,20 @@
 		if(auth!=null && auth["token"]) token = auth["token"];
 		var key = url+JSON.stringify(_request);
 		var now = +new Date();
-		var passtime = _cache["userSetting"]["requestCacheTime"];
 
 		if(cacheReset){
-			_requestCache = [];
+			delete _requestCache[key];
 		}
 		else {
-			for(var i=_requestCache.length-1;i>=0;i--){
-				if(!_requestCache[i]["key"]) continue;
-				if(_requestCache[i]["key"]==key){
-					if(now-_requestCache[i]["time"] > passtime || cacheReset){
-						_requestCache.splice(i,1);
-						break;
-					}
-					else {
-						if(util.isFunction(success)) success(_requestCache[i]["result"], null,null);
-						return true;
-					}
-				}
+			var _result = getRequestCache(key);
+			if(_result !== null){
+				if(util.isFunction(success)) success(_result, null,null);
+				return true;
 			}
 		}
 		loadStart();
-		//console.log("ajax exec:"+key);
+		console.log("getAjax exec:"+key);
+
 		var ret = $.ajax({
 			headers: {
 				'X-Requested-With': 'XMLHttpRequest',
@@ -426,9 +456,7 @@
 				loadStop();
 				if(result["status"]=="success"){
 					if(util.isFunction(success)) success(result, st, xhr);
-					var cache = {"key" : key , "time":now, "result" : result, "request" : request}
-					if(_requestCache.length >_cache["userSetting"]["requestCacheSize"]) _requestCache.splice(0,10);
-					_requestCache.push(cache);
+					setRequestCache(key, result);
 				}
 				else {
 					alertMessage(result["message"], result["description"], _logout);
@@ -459,6 +487,7 @@
 		var auth = util.getLocalData("auth");
 		var token = "";
 		if(auth!=null && auth["token"]) token = auth["token"];
+		console.log("postAjax exec:"+url);
 		loadStart();
 		var ret = $.ajax({
 			headers: {
@@ -636,6 +665,9 @@
 				//改行文字含む文字列は含めない
 				continue;
 			}
+			if(typeof a[key] == "string" && util.isNumeric(a[key]) && a[key]==(a[key])|0+""){
+				a[key] = a[key]|0;
+			}
 			_ret[key] = a[key];
 		}
 		return _ret;
@@ -696,6 +728,37 @@
 	function confirmMessage(messageCode, messageParam, callback){
 		var message = getMessage(messageCode, messageParam);
 		dom.confirmMessage(message["title"], message["body"], callback);
+	}
+
+	function loadRequestCache(){
+		_requestCache = util.getLocalData("_requestCache");
+		if(_requestCache===null) _requestCache={};
+		for(var key in _requestCache){
+			getRequestCache(key);
+		}
+	}
+	function getRequestCache(key){
+		if(!_requestCache[key]) return null;
+		if(!_requestCache[key]["time"] || !_requestCache[key]["result"]) {
+			delete _requestCache[key];
+			return null;
+		}
+		var now = +new Date();
+		if(now-_requestCache[key]["time"] > _cache["userSetting"]["requestCacheTime"]) {
+			delete _requestCache[key];
+			return null;
+		}
+		return _requestCache[key]["result"];
+	}
+	function setRequestCache(key, data){
+		var now = +new Date();
+		//_requestCache[key] = {"key" : key , "time":now, "result" : data, "request" : request};
+		_requestCache[key] = {"time":now, "result" : data};
+		util.setLocalData("_requestCache", _requestCache);
+	}
+	function clearRequestCache(){
+		util.setLocalData("_requestCache" , "");
+		_requestCache = {};
 	}
 	root.service = $.extend({}, root.service, public_method);
 

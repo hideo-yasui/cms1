@@ -82,7 +82,7 @@ class comView extends comService
 		if(!isset($page_code) || empty($page_code)) return $ret;
 
 		$pageData = array(
-			'SYSTEM_CODE' => $this->system,
+			'auth_system' => $this->system,
 			'PAGE_TYPE' => 'commonView',
 			'page_code' => $page_code
 		);
@@ -103,8 +103,11 @@ class comView extends comService
 			//m_page.NAMEからtitle
 			if(isset($data["NAME"]) && !empty($data["NAME"])) $ret["title"] = $data["NAME"];
 			if(isset($data["OPTION_STRING"]) && !empty($data["OPTION_STRING"])){
+				/*
 				$option = trim('{'.str_replace('&quot;', '"', $data["OPTION_STRING"]).'}');
 				$option = json_decode($option, true);
+				*/
+				$option = conv_string_to_json($data["OPTION_STRING"]);
 				//m_page.OPTION_STRINGからtemplateとcontentsを取得
 				if(isset($option["title"]) && !empty($option["title"])) $ret["title"] = $option["title"];
 				if(isset($option["template"]) && !empty($option["template"])) $ret["template"] = $option["template"];
@@ -212,7 +215,6 @@ class comView extends comService
 		$this->application->dbi->addConfigLog("err", "showView paramater error:".$this->system."/".$contents."/".$template );
 		$this->showPageNotFound();
 	}
-
 	//404相当ページの表示
 	private function showPageNotFound(){
 		view("/control/notfound.php", array());

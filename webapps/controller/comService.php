@@ -5,16 +5,19 @@ class comService extends Controller
 	protected $auth_actions = array('');
 
 	public function search($params){
+		/*
 		$values = $this->_auth_token();
-		$auth_info = false;
+		$is_auth = false;
 		if($values["status"] ==="success") {
 			$is_auth = true;
 		}
-/*
+		*/
+		/*
 		$result = $this->application->dbi->load_cache();
 		if($result!==null) return $result;
-	*/
+		*/
 		$result = $this->badRequestResponce();
+
 		if(isset($params['query_code'])){
 			if ($this->request->isGet()) {
 				$params = array_merge($params, $_GET);
@@ -22,9 +25,15 @@ class comService extends Controller
 				//$this->application->dbi->save_cache($result);
 			}
 		}
+		@TXT_LOG("service", $_SERVER['SCRIPT_NAME'], basename(__FILE__),__LINE__, "comService search end") ;
 		return $result;
 	}
 	public function query($params){
+		$values = $this->_auth_token();
+		$is_auth = false;
+		if($values["status"] ==="success") {
+			$is_auth = true;
+		}
 		TXT_LOG("request", $_SERVER["REQUEST_URI"]);
 		$result = $this->badRequestResponce();
 		if(isset($params['query_code'])){
@@ -44,6 +53,7 @@ class comService extends Controller
 				$params = array_merge($params, $_POST);
 			}
 			$system = $this->system;
+			$params['auth_system'] = $system;
 			if(isset($params['system'])){
 				$system = $params['system'];
 			}
@@ -57,6 +67,29 @@ class comService extends Controller
 				$this->application->dbi->clear_cache($path);
 			}
 */
+		}
+		return $result;
+	}
+	public function get_editpage($params){
+		$result = $this->badRequestResponce();
+		if ($this->request->isGet()) {
+			$params = array_merge($params, $_GET);
+		}
+		$query_code = str_replace("_add", "_".$params["method"], $params["page_code"]);
+		$params["query_code"] = "get_page";
+		$params["system"] = "control";
+		$params["method"] = "";
+		$page = $this->query($params);
+		if($page["status"]==="success"){
+			$method = $params["method"];
+			$params["query_code"] = $query_code;
+			$params["system"] = $this->system;
+			$data = $this->query($params);
+			if($data["status"]==="success"){
+				$result = $this->getResponce();
+				$result["page"] = $page["data"];
+				$result["data"] = $data["data"];
+			}
 		}
 		return $result;
 	}
@@ -79,12 +112,17 @@ class comService extends Controller
 	}
 	private function _getfile($params, $is_inline){
 		global $gPathList;
-		$values = $this->application->dbi->execConfigQuery("get_file", $params);
+
+		$values = $this->application->dbi->load_cache();
+		if($values===null){
+			$values = $this->application->dbi->execConfigQuery("get_file", $params);
+			$this->application->dbi->save_cache($values);
+		}
 		if($values["status"] =="success" && count($values["data"]) > 0){
 			$save_file_path = $gPathList["upload"].$values["data"][0]["fileid"];
 			$fileid = $values["data"][0]['fileid'];
 			$filename = $values["data"][0]['filename'];
-			$values = $this->application->dbi->downloadfile($fileid, $filename, $save_file_path, $is_inline);
+			$values = $this->downloadfile($fileid, $filename, $save_file_path, $is_inline);
 			return true;
 		}
 		return false;
@@ -93,11 +131,15 @@ class comService extends Controller
 		global $gPathList;
 		$result = $this->badRequestResponce();
 		if ($this->request->isPost()) {
+			$params = array_merge($params, $_POST);
 			$todate = date("Ymd_His");
 			$fileid = $todate."_".getSecureKey(6);
-			$result = $this->uploadfile($_POST["formid"], $gPathList["upload"], $fileid);
+			$result = $this->uploadfile($params["formid"], $gPathList["upload"], $fileid);
+
 			if($result["status"] ==="success"){
-				$values = $this->application->dbi->addConfigFile($values["data"], $_POST["remark"]);
+				$remark = "";
+				if(!empty($params["remark"])) $remark = $params["remark"];
+				$values = $this->application->dbi->addConfigFile($result["data"], $remark);
 				$result["status"] = $values["status"];
 				$result["message"] = $values["message"];
 				$result["description"] = $values["description"];
@@ -140,10 +182,29 @@ class comService extends Controller
 			@TXT_LOG("error", $_SERVER['SCRIPT_NAME'], basename(__FILE__),__LINE__, "aws_s3->getfile",$values["message"], $values["description"]) ;
 			return $values;
 		}
-
+		$last_modified = filectime($savefile);
 		$isStream = 0;
 		$filename = ' filename*=UTF-8\'\''.rawurlencode($filename);
 		if($is_inline === false) $filename = "attachment; ".$filename;
+		$cache_time = 86400;
+		///もしキャッシュ更新確認リクエストなら
+		if(isset($_SERVER["HTTP_IF_MODIFIED_SINCE"])){
+			$str_time = $_SERVER["HTTP_IF_MODIFIED_SINCE"];
+			$last_modified_since = strtotime($str_time);
+			if($last_modified_since == $last_modified){
+				//ファイル更新がなければ、キャッシュ有効を返す。
+				header("HTTP/1.1 304 file not modified");
+				header('Pragma: cache');
+				header("Cache-Control: max-age=".($cache_time));
+				return $values;
+			}
+		}
+		else {
+			header("Last-Modified: " . date('r', $last_modified));
+		}
+		header('Pragma: cache');
+		header("Cache-Control: max-age=".($cache_time));
+
 		if($isStream == 1){
 			header("Content-Disposition: inline; ".$filename );
 			header("Content-Type: application/octet-stream");
@@ -273,6 +334,7 @@ class comService extends Controller
 				session_regenerate_id(true) ;
 				$_SESSION["access_time"] = time();
 				$_SESSION["auth_token"] = $token;
+				$_SESSION["auth_user_id"] = $data["ID"];
 			}
 		}
 		$result = array(
@@ -285,10 +347,10 @@ class comService extends Controller
 		return $result;
 	}
 	/**
-	 * API用 Token発行ロジック
-	 * @param integer $user_id
-	 * @return string
-	 */
+	* API用 Token発行ロジック
+	* @param integer $user_id
+	* @return string
+	*/
 	private function get_token($key)
 	{
 		$tmp = $key.bin2hex(openssl_random_pseudo_bytes(16));
@@ -296,9 +358,9 @@ class comService extends Controller
 		return $token;
 	}
 	/**
-	 * 認証処理
-	 * @return Array
-	 */
+	* 認証処理
+	* @return Array
+	*/
 	public function _auth_token() {
 		$http_header = getallheaders();
 		$token = "";
@@ -387,6 +449,19 @@ class comService extends Controller
 			setcookie( $sesName, "", $setExpTime, "/" ) ;
 		}
 		session_destroy();
+		return $this->getResponce();
+	}
+	public function send_mail(){
+		mb_language("Japanese");
+		mb_internal_encoding("UTF-8");
+		$from = "programming.self.study@gmail.com<放課後プログラミング塾 Self-Study>";
+		$to = "konto28go@yahoo.co.jp";
+		$title = "お問い合わせ内容を送信いたしました。";
+		$body = "お問い合わせ内容ありがとうございます。";
+
+		if(sendMail($from, $to, $title, $body)===false){
+			return $this->errorResponce();
+		}
 		return $this->getResponce();
 	}
 }

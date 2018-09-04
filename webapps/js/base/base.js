@@ -33,13 +33,15 @@
 			window.onpopstate=function(e){
 				pageOnload( e.state);
 			};
-			pageOnload();
+			window.onload = pageOnload;
 		},
 		pageSettinged : pageSettinged,
 		getFileForm : getFileForm,
 		listRefresh : listRefresh,
 		linkProc : linkProc,
-		exportProc : exportProc
+		exportProc : exportProc,
+		showPage : showPage,
+		pageOpen : pageOpen
 	};
 	//---------------------------------------------------
 	//onload系～
@@ -49,7 +51,8 @@
 		var lq = service.getQueryParam("query_code");
 		if(!util.isEmpty(lq)){
 			_isPageLoad=true;
-			var _req = util.convQueryStringToJson();
+			var _queryString = util.convQueryStringToJson();
+			var _req = {"query_code" : _queryString["query_code"], "PID" : _queryString["PID"]};
 			listInit("listTable", _req, false, function(){
 				var lt = service.getQueryParam("lt");
 				if(!util.isEmpty(lt) && lt!=="undefined"){
@@ -59,7 +62,7 @@
 				if(!util.isEmpty(su) && su==1) _isUpdate=true;
 				var pagecode = service.getQueryParam("sp");
 				var formId = service.getQueryParam("sf");
-				var data = _req;
+				var data = _queryString;
 				var _savedata = util.getLocalData("autosave");
 				if(su && _savedata != null) data = $.extend(data, _savedata);
 				if(!util.isEmpty(formId) && !util.isEmpty(pagecode)){
@@ -79,11 +82,12 @@
 	//画面表示系～
 	//---------------------------------------------------
 	//ページ設定後処理：各フォームUIのロード
-	function pageSettinged(formId){
+	function pageSettinged(formId, formData){
 		_currentForm = formId;
 		$("input[type=file]", $("#"+formId)).each(function(){
 			var name = $(this).attr("name");
 			if(util.isEmpty(name)) return;
+			$("img[alt="+name+"][accesskey=preview]", $("#"+formId)).hide();
 			_cache["_fileUI"][name] = $(this).fileUI({
 				"formId" : formId,
 				"dragdrop" : ".dragdropupload",
@@ -92,16 +96,18 @@
 					var accesskey = $(element).attr("accesskey");
 					var filename = fileData["name"];
 					if(util.isEmpty(filename)) filename = "ファイルが指定されていません";
+					$("img[alt="+name+"][accesskey=preview]", $("#"+formId)).hide();
 					$("*[alt="+name+"][accesskey=filename]", $("#"+formId)).html(filename);
 					$("*[alt="+name+"][accesskey=filesize]", $("#"+formId)).html(fileData["size"]);
 					$("*[alt="+name+"][accesskey=filetype]", $("#"+formId)).html(fileData["type"]);
+					if(fileData["file"]===null) return false;
 					switch(accesskey){
 						case "upload":
 							fileUpload(name);
 							break;
 						case "auto_upload":
 							_fileUpload(name, _currentRequest["query_code"], function(result){
-								setFileForm(name, result);
+								dom.setFileForm(formId, name, result["data"]["fileid"]);
 							});
 							break;
 						case "import":
@@ -117,6 +123,7 @@
 			var accesskey = $(this).attr("accesskey");
 			var target = $(this).attr("target");
 			var type = $(this).attr("type");
+			var query = $(this).attr("query");
 			//console.log("accesskey="+accesskey+",alt="+alt+",target="+target);
 			switch(accesskey){
 				case "fileclear":
@@ -147,8 +154,8 @@
 					});
 					break;
 				case "savemulti":
-					if(util.isEmpty(type)) type = "upd";
-					saveProc(type, alt,  function(){
+					if(util.isEmpty(alt)) alt = "upd";
+					saveProc(alt, query,  function(){
 						if(util.isEmpty(target)){
 							_savedReload();
 						}
@@ -172,7 +179,7 @@
 				case "back":
 				case "close":
 				case "cancel":
-					window.history.back();
+					pageClose();
 					break;
 				case "yes":
 					if(util.isFunction(_cache["__callback"])) _cache["__callback"]();
@@ -183,16 +190,39 @@
 			}
 			e.preventDefault();
 		});
+		$(document).unbind("keydown");
+		$(document).on("keydown", function(e){
+			console.log("["+e.key+"]["+e.ctrlKey+"]["+e.shiftKey+"]["+e.altKey+"]");
+			switch(e.key.toLowerCase()){
+				case "i":
+					if(e.altKey) $("button.btn[accesskey=newadd]:visible").click();
+					break;
+				case "d":
+					if(e.altKey) $("button.btn[accesskey=close]:visible").click();
+					break;
+				case "s":
+					if(e.altKey) $("button.btn[accesskey=save]:visible").click();
+					break;
+				case "y":
+					if(e.altKey) $("button.btn[accesskey=yes]:visible").click();
+					break;
+				case "n":
+					if(e.altKey) $("button.btn[accesskey=no]:visible").click();
+					break;
+			}
+		});
+
 		$("select[accesskey]", $("#"+formId)).each(function(i){
 			var _defaultSelect = $(this).attr("defaultSelect");
-			dom.selectFormLoad(_currentForm, this, _defaultSelect, null, _currentRequest);
+			dom.selectFormLoad(_currentForm, this, _defaultSelect, null, formData);
 		});
 		$("div[uitype=radio]", $("#"+formId)).each(function(i){
 			var _defaultSelect = $(this).attr("defaultSelect");
-			dom.selectFormLoad(_currentForm, this, _defaultSelect, $(this).html(), _currentRequest);
+			dom.selectFormLoad(_currentForm, this, _defaultSelect, $(this).html(), formData);
 		});
-		$("select.select2", $("#"+formId)).select2();
-
+		$("select.select2", $("#"+formId)).select2({
+			dropdownParent: $("#"+formId)
+		});
 		//Flat red color scheme for iCheck
 		$('input[type="checkbox"].flat-red, input[type="radio"].flat-red').iCheck({
 			checkboxClass: 'icheckbox_flat-green mr-1',
@@ -210,9 +240,17 @@
 		dom.setCalenderForm(formId);
 		//数値入力
 		dom.setNumberForm(formId);
+		*/
 		//値自動調整
 		front.setInputAdjust(formId);
-		*/
+		dom.setEditForm(formData, formId, _isUpdate);
+		$("textarea", $("#"+formId)).each(function(){
+			var val = ($(this).val()+"\n").split("\n");
+			var len = val.length;
+			if(len > 15) len = 15;
+			else if(len < 3) len = 3;
+			$(this).attr("rows", len);
+		});
 	}
 
 	//---------------------------------------------------
@@ -225,7 +263,7 @@
 			var buttonForm = option["button"];
 			var permission = util.getLocalData("permission");
 			var button = {
-					"scansearch" : { "control" : "hidden", "target" : "top", "text" : "ｽｷｬﾝ"},
+					"back" : { "control" : "hidden", "target" : "left", "text" : "戻る", "icon" : "reply"},
 					"newadd" : { "control" : "hidden", "target" : "left", "align" : "right_text", "icon" : "plus", "text" : "追加", "alt" : "add"},
 					"setting" : { "control" : "hidden", "target" : "left", "align" : "right_text", "icon" : "cogs", "text" : "一括更新"},
 					"refresh" : { "control" : "hidden", "target" : "left", "align" : "right_text", "icon" : "sync", "text" : "再表示"},
@@ -293,6 +331,7 @@
 				var _align = "";
 				var _accesskey = key;
 				var _attr = "";
+
 				if(!button[key]["accesskey"]) button[key]["accesskey"] = key;
 				if(button[key]["text"]) _html = _html.replace("#text#", button[key]["text"]);
 				if(button[key]["icon"]) _html = _html.replace("#icon#", button[key]["icon"]);
@@ -305,6 +344,7 @@
 				}
 				if(key == "search"){
 					$("*[accesskey="+key+"]", $("#main")).css("display", "inline-block");
+
 					$("input[name='p_search_word']").on("keypress", function(e){
 						if(e.keyCode==13){
 							//検索入力～Enterで、検索ボタン押下
@@ -353,7 +393,7 @@
 						_linkDOM.attr("accesskey", "subpage");
 						linkProc(_linkDOM, _currentRequest);
 						break;
-					case "detailsearch":
+					case "detaFilsearch":
 					case "import":
 					case "dialog" :
 					case "scansearch":
@@ -378,14 +418,19 @@
 							linkProc(_linkDOM, _currentRequest);
 						}
 						break;
-					case "close":
-						pageClose();
-						break;
 					case "refresh":
 						_isPageLoad = true;
 						listRefresh(true);
+						service.clearRequestCache();
+						break;
+					case "listinit":
+						_linkDOM.attr("accesskey", "listinit");
+						linkProc(_linkDOM, _currentRequest);
 						break;
 					case "back":
+					case "close":
+						//pageClose();
+						window.history.back();
 						break;
 					case "preview":
 						//プレビューボタン
@@ -444,26 +489,9 @@
 		if(!front.validateFormValue(_currentForm)) return false;
 		service.confirm("C_POST_UPL", "", function(){
 			_fileUpload(formname, _currentRequest["query_code"], function(result){
-					setFileForm(formname, result);
+					dom.setFileForm(_currentForm, formname, result["data"]["fileid"]);
 					if(util.isFunction(callback)) callback(fileid);
 			});
-		});
-	}
-	function setFileForm(formname, result){
-		var fileid = result["fileid"];
-		var url = "/download/"+fileid;
-		$("a[alt="+formname+"][accesskey=fileid]", $("#"+_currentForm)).html(fileid);
-		$("a[alt="+formname+"][accesskey=fileid]", $("#"+_currentForm)).attr("href", url);
-		$("input[type=hidden]", $("#"+_currentForm)).each(function(){
-			var field = $(this).attr("name");
-			var val = $("span[accesskey='"+field+"']", $("#"+_currentForm)).html();
-			if(field=="filesize") val = result["fsize"];
-			if(field=="fileid") val = fileid;
-			if(!util.isEmpty(val)) $(this).val(val);
-			else {
-				val = $("a[accesskey="+field+"]", $("#"+_currentForm)).html();
-				if(!util.isEmpty(val)) $(this).val(val);
-			}
 		});
 	}
 	function getFileForm(formname){
@@ -537,7 +565,7 @@
 		});
 	}
 	//サブページ表示処理
-	function showPage(formId, pagecode,  callback, windowName){
+	function showPage(formId, pagecode, formData, callback, windowName){
 		if(!util.isEmpty(formId)) _currentForm = formId;
 		if(util.isEmpty(pagecode)) return;
 		var async = true;
@@ -546,35 +574,41 @@
 			function(result, st, xhr) {
 				if(util.isEmpty(_currentRequest)) _currentRequest = {"query_code" : pagecode};
 				var param = result["data"][0];
-				var title = param["NAME"];
-				var p = $("<p></p>");
-				p.html(param["OPTION_STRING"]);
-				var option = p.html();
-				if(option && option!="" && option.indexOf(":")>=0) {
-					option = JSON.parse("{"+option+"}");
-					if(option["title"] && !util.isEmpty(option["title"])) title = option["title"];
-					//更新モードの場合、OPTION_STRING.edit_title設定があれば、優先的に使う
-					if(_isUpdate && option["edit_title"] && !util.isEmpty(option["edit_title"])) title = option["edit_title"];
-					var type=$("#"+formId).attr("type");
-					$(".content-sub-title", $("#"+formId)).html(title);
-					switch(param["TYPE"]){
-						case "param":
-							var _pageContents = dom.paramPageLoad(option["form"],option["button"],_listTable["listTable"]);
-							$(".content-sub-body", $("#"+formId)).html(_pageContents);
-							pageSettinged(_currentForm);
-							buttonControl(option);
-							if(callback && $.type(callback)=="function") callback(option);
-							break;
-					}
-				}
-
+				paramPageLoad(formId, param, formData, callback);
 			},
 			function(xhr, st, err) {
 				service.error("showPage\n"+err.message+"\n"+xhr.responseText);
 			}
 		);
 	}
-
+	function paramPageLoad(formId, param, formData, callback){
+		var title = param["NAME"];
+		var p = $("<p></p>");
+		p.html(param["OPTION_STRING"]);
+		var option = p.html();
+		if(option && option!="" && option.indexOf(":")>=0) {
+			if(!util.isJson(option) && util.isJson("{"+option+"}")){
+				option = "{"+option+"}";
+			}
+			option = util.toJson(option);
+			if(option["title"] && !util.isEmpty(option["title"])) title = option["title"];
+			//更新モードの場合、OPTION_STRING.edit_title設定があれば、優先的に使う
+			if(_isUpdate && option["edit_title"] && !util.isEmpty(option["edit_title"])) title = option["edit_title"];
+			var type=$("#"+formId).attr("type");
+			$(".content-sub-title", $("#"+formId)).html(title);
+			switch(param["TYPE"]){
+				case "param":
+					var _pageContents = dom.paramPageLoad(option["form"],option["button"],_listTable["listTable"]);
+					$(".content-sub-body", $("#"+formId)).html(_pageContents);
+					break;
+				case "url":
+					break;
+			}
+			pageSettinged(formId, formData);
+			buttonControl(option);
+			if(callback && $.type(callback)=="function") callback(option);
+		}
+	}
 	//---------------------------------------------------
 	//list_table UI系～
 	//---------------------------------------------------
@@ -582,8 +616,8 @@
 		pageClose();
 		//初期表示・（未対応：ソート）・ページング・検索にて通過(ページはクリアしない）
 		if(!req["_order_"]) req["_order_"] = 1;
-		req["_offset_"] = _cache["userSetting"]["pageSize"]*_listInfo["page"];
 		req["_limit_"] = _cache["userSetting"]["pageSize"];
+		req["_offset_"] = _cache["userSetting"]["pageSize"]*_listInfo["page"];
 		_currentRequest = req;
 		$("[accesskey=search] select, [accesskey=search] input").each(function(){
 			//検索フォームの値をパラメータと同期
@@ -593,7 +627,7 @@
 		});
 
 		_cache["_url"]["listInit"] = req;
-		_cache["_url"]["showPage"] = "";
+		delete _cache["_url"]["showPage"];
 		delete req["ta"];
 		delete req["to"];
 		delete req["lt"];
@@ -605,7 +639,10 @@
 				var type  =  result["type"];
 				var title = result["name"];
 				if(option && option!="" && option.indexOf(":")>=0){
-					option = JSON.parse("{"+option+"}");
+					if(!util.isJson(option) && util.isJson("{"+option+"}")){
+						option = "{"+option+"}";
+					}
+					option = util.toJson(option);
 					_listInfo["option"] = option;
 					if(option["title"] && !util.isEmpty(option["title"])) title = option["title"];
 				}
@@ -636,6 +673,15 @@
 					_listTable[id].publish(_listParam);
 				}
 				else {
+					switch(type+""){
+						case "0":
+							_listTable[id] = new ListTable($("#"+id), _listParam);
+							break;
+						case "1":
+							_listTable[id] = new CardTable($("#"+id), _listParam);
+							break;
+					}
+					/*
 					var _component = $("#"+id).attr("alt");
 					switch(_component.toLowerCase()){
 						case "cardtable":
@@ -645,6 +691,7 @@
 							_listTable[id] = new ListTable($("#"+id), _listParam);
 							break;
 					}
+					*/
 				}
 				_listTable[id].refresh();
 
@@ -691,14 +738,14 @@
 	function listPageEnd(){
 		listPageMove(_maxInt);
 	}
-	function listFilter(data, filter){
+	function listFilter(data, field){
 		if(util.isEmpty(filter)) return  data;
 		var filterVal = $("*[accesskey=scan][alt=codes]").val();
 		filterVal = (filterVal+",").split(",");
 		var result = [];
 		for(var i=0,n=filterVal.length;i<n;i++){
 			if(util.isEmpty(filterVal[i])) continue;
-			var rowNo = _listTable["listTable"].existData(null, filter, filterVal[i]);
+			var rowNo = _listTable["listTable"].existData(null, field, filterVal[i]);
 			result.push(data[rowNo]);
 		}
 		return result;
@@ -799,12 +846,14 @@
 		var field = $(link).attr("name");
 		var val = $(link).text();
 		if(util.isEmpty(val) && !util.isEmpty($(link).val())) val = $(link).val();
-		var _isHistoryAdd = false;
+		_isUpdate = true;
+
+		if(!util.isEmpty(alt) && alt=="newadd") _isUpdate = false;
 		switch(accesskey.toLowerCase()){
 			case "listinit":
 				_listInfo["page"] = 0;
 				//var _req = service.extendRequestJson({"query_code" : target}, data);
-				var _req = {"query_code" : target, "PID" : data["ID"]};
+				var _req = {"query_code" : target, "PID" : data["ID"], "PPID" : data["PID"]};
 				listInit("listTable",_req, false, function(){
 					var _title = $(".content-title").html();
 					_title = _title.replace("#param#", val);
@@ -825,7 +874,6 @@
 				*/
 				break;
 			case "subpage":
-				if(alt == "newadd") _isUpdate = false;
 				var pagecode = _currentRequest["query_code"]+"_"+target;
 				showEditPage(_editPageId, pagecode,_currentRequest["query_code"], data, _isUpdate);
 				/*
@@ -857,22 +905,20 @@
 		_cache["_url"]["showPage"] = {};
 		_cache["_url"]["showPage"]["sf"] = formId;
 		_cache["_url"]["showPage"]["sp"] = pagecode;
-		if(isEdit) _cache["_url"]["showPage"]["su"] = 1;
+		 _cache["_url"]["showPage"]["su"] = "";
+		if(isEdit) _cache["_url"]["showPage"]["su"] ="1";
+		_isUpdate = isEdit;
 		setUrl();
 		if(util.isEmpty(querycode) || util.isEmpty(_req["ID"])){
-			showPage(formId, pagecode,  function(){
-				_isUpdate = isEdit;
-				dom.setEditForm(data, formId, _isUpdate);
+			showPage(formId, pagecode, data, function(){
 				pageOpen();
 			});
 		}
 		else {
 			service.getAjax(true, "/getedit/"+querycode+"/"+_req["ID"], {},
 				function(result, st, xhr) {
-					var data =  result["data"];
-					_isUpdate = isEdit;
-					showPage(formId, pagecode, function(){
-						dom.setEditForm(data[0], formId, _isUpdate);
+					var data =  result["data"][0];
+					showPage(formId, pagecode, data, function(){
 						pageOpen();
 						autoSave();
 					});
@@ -882,15 +928,36 @@
 				}
 			);
 		}
+		/*
+		else {
+			service.getAjax(true, "/getpage/"+pagecode+"/edit/"+_req["ID"], {},
+				function(result, st, xhr) {
+					var data =  result["data"][0];
+					var page =  result["page"][0];
+					_isUpdate = isEdit;
+					paramPageLoad(formId, page, function(){
+						dom.setEditForm(data, formId, _isUpdate);
+						pageOpen();
+						autoSave();
+					});
+				},
+				function(xhr, st, err) {
+					service.error("showEditPage\n"+err.message+"\n"+xhr.responseText);
+				}
+			);
+		}
+		*/
 	}
 
 	function pageOpen(formId){
 		if(util.isEmpty(formId)) formId = _currentForm;
 		if($("#"+formId).hasClass("modal")){
+			$("#"+formId).on('hidden.bs.modal', function () {
+				pageClose(formId);
+			});
 			$("#"+formId).modal('show');
 		}
 		else {
-			$("#"+_dialogId).modal('hide');
 			$("#"+formId).show();
 			$("#main").hide();
 		}
@@ -900,6 +967,8 @@
 		if(util.isEmpty(formId)) formId = _currentForm;
 		if(util.isEmpty(formId)) return;
 		if(formId=="main") return;
+		delete _cache["_url"]["showPage"];
+		setUrl();
 		if($("#"+formId).hasClass("modal")){
 			$("#"+formId).modal('hide');
 		}
@@ -943,11 +1012,11 @@
 	}
 	/*保存処理後の再表示*/
 	function _savedReload(){
-		/*
 		pageClose(_currentForm);
 		listRefresh(true);
-		*/
+		/*
 		window.history.back();
+		*/
 	}
 	function autoSave(){
 		if(_saveTimer!=null){
@@ -963,17 +1032,23 @@
 		}
 		util.setLocalData("autosave", {});
 	}
+	function getUrl(){
+		var url = location.pathname;
+		var lt = $(".content-title").html();
+		var _url_params = $.extend({}, _cache["_url"]["listInit"]);
+		var treestatus = getTreeStatus();
+		_url_params =$.extend(_url_params, _cache["_url"]["showPage"]);
+		_url_params =$.extend(_url_params, treestatus);
+		_url_params["lt"] = lt;
+		url += "?" + util.convJsonToQueryString(_url_params);
+		return url;
+	}
 	function setUrl(){
+		console.log("setUrl");
 		if(!_isPageLoad) {
-			var url = location.pathname;
-			var lt = $(".content-title").html();
-			var _url_params = _cache["_url"]["listInit"];
-			var treestatus = getTreeStatus();
-			_url_params =$.extend(_url_params, _cache["_url"]["showPage"]);
-			_url_params =$.extend(_url_params, treestatus);
-			_url_params["lt"] = lt;
-			url += "?" + util.convJsonToQueryString(_url_params);
-			window.history.pushState(null, null, url);
+			var _url = getUrl();
+			console.log("setUrl:"+_url);
+			window.history.pushState(null, null, _url);
 		}
 		_isPageLoad = false;
 	}

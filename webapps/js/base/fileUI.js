@@ -30,7 +30,7 @@
 		$(this.element).change(function(e){
 			var files = $(this).get(0).files;
 			_self.setFile(files);
-			_self.change();
+			_self.change(e);
 		});
 
 		if(!util.isEmpty(options.dragdrop)){
@@ -50,11 +50,14 @@
 				e.preventDefault();
 				var files = e.originalEvent.dataTransfer.files;
 				_self.setFile(files);
-				_self.change();
+				_self.change(e);
 			});
 		}
 		if(util.isFunction(options.onChange)){
 			this.onChange = options.onChange;
+		}
+		if(util.isFunction(options.onPreview)){
+			this.onPreview = options.onPreview;
 		}
 	};
 
@@ -77,7 +80,7 @@
 	* @method change
 	* @return {void} return nothing
 	*/
-	fileUI.prototype.change = function() {
+	fileUI.prototype.change = function(e) {
 		var _file =$(this.element);
 		var filetype = _file.attr("filetype");
 		var formname = _file.attr("name");
@@ -95,6 +98,19 @@
 		this.files = files;
 		if(files != null && files.name && !util.isEmpty(files.name) && util.isEmpty($(this.element).val())){
 			$(this.element).val(files.name);
+			if(files.length==1){
+				var file=files[0];
+				if(file.type.indexOf("image") >= 0){
+					var self = this;
+					var reader = new FileReader();
+					reader.onload = (function(file){
+						return function(e){
+							if(util.isFunction(self.onPreview)) self.onPreview($(self.element),e.target.result, file.name);
+						};
+					})(file);
+					reader.readAsDataURL(file);
+				}
+			}
 		}
 	};
 	/**
@@ -145,8 +161,8 @@
 	fileUI.DEFAULTS = {
 		"formId" : "",
 		"dragdrop" : ".dragdropupload",
-		"onChange" : function(name, fileData){
-		}
+		"onChange" : function(element, fileData){},
+		"onPreview" : function(element, src, name){}
 	};
 
 	// fileUI plugin

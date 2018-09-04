@@ -3,28 +3,31 @@ class CardTable {
 	//data-formt : ID, value, title, imgurl, limit_ratio, limit_date
 	constructor(element, options) {
 		this.parent_dom = 'ul';
+		this._publish_dom = '<ul class="mailbox-attachments clearfix"></ul>';
 		this._row_template = [
-			'<li class="">',
+			'<li #li_class#>',
 				'<input type="hidden" value="#__index__#" name="__index__" id="__index__" />',
 				'<input type="hidden" value="#ID# name="ID" />',
-				'<div class="panel-badge">',
-					'<span class="right badge badge-danger float-right mx-1 text-lg">#value#</span>',
-				'</div>',
+//				'<div class="panel-badge">',
+//					'<span class="right badge badge-danger float-right mx-1 text-lg">#value#</span>',
+//				'</div>',
 				'<div class="mailbox-attachment-icon has-img">',
-					'<h5><i class="fa fa-tag mr-1"></i>#title#</h5>',
+					'<h5>#title#</h5>',
 					'<img src="#imgurl#" alt="Attachment">',
 					'<h4 class="icon-label hide">',
-						'<div class="text-success text-xl"><i class="fa fa-check-circle"></i></div>',
+						'<div class="text-xl"><i class="fa fa-check-circle"></i></div>',
 					'</h4>',
 				'</div>',
 				'<div class="mailbox-attachment-info">',
+					'<div class="">#value#',
+					'</div>',
 					'<div class="progress my-1">',
 						'<div class="progress-bar #limit_ratio_color#" role="progressbar" aria-valuenow="#limit_ratio#" aria-valuemin="0" aria-valuemax="100" style="width: #limit_ratio#%">',
 							'<span class="sr-only"></span>',
 						'</div>',
 					'</div>',
 					'<span class="mailbox-attachment-size">',
-					'	<i class="fa fa-calendar-times mr-1"></i>#limit_date#',
+					'	#limit_date#',
 						'#button#',
 					'</span>',
 				'</div>',
@@ -48,6 +51,7 @@ class CardTable {
 		this.currentSort = {};
 		this.currentSortOrder = [];
 		this.sortFieldLength = 0;
+		this.element.html(this._publish_dom);
 	};
 	refresh(data) {
 		this.tempdata = null;
@@ -101,19 +105,41 @@ class CardTable {
 					attribute += ' title="'+this.tempdata[i][title]+'"';
 					settitle = true;
 				}
+				if(this.__isVisible(this.tempdata[i], this.options.header[key]["visible"])===false) continue;
 				for(var j=0,m=fields.length;j<m;j++){
 					var field = fields[j];
 					var val=null;
 					if(field==null) val = i+1;
-					else if(!(field in this.tempdata[i])) val = "-";
+					else if(!(field in this.tempdata[i])) val = "";
 					else if( this.tempdata[i][field]===0) val = "0";
-					else if(util.isEmpty(this.tempdata[i][field])) val = "-";
+					else if(util.isEmpty(this.tempdata[i][field])) val = "";
 					else val = this.tempdata[i][field];
 
 					if(!this.options.header[key]["type"]) this.options.header[key]["type"]=null;
 					var type = this.options.header[key]["type"];
 
 					switch(type){
+						case "button":
+							/*
+							edit_copy_deleteを再現したければ、
+							headerに90 : edit, 91 : copy, 92 : deleteの定義を設定
+							buttonの定義のfieldを配列にし[90,91,92]とする
+							1. field=90のデータは存在しないのでval=空
+							2. keyのtype=button / fieldsの数だけbuttonフォームが、valsに追加される
+							3. text=buttonで指定しているので、そちらに全部追加する
+							*/
+							var _class = this.options.header[field]["class"];
+							let _alt = this.options.header[field]["alt"];
+							let _accesskey = this.options.header[field]["accesskey"];
+							let _target = this.options.header[field]["target"];
+							if(this.__isVisible(this.tempdata[i], this.options.header[field]["visible"])===true){
+								val = [
+										'<button href="javascript:void(0);" alt="'+_alt+'" target="'+_target+'" class="btn btn-default btn-sm float-right" accesskey="'+_accesskey+'">',
+											'<i class="fa fa-'+_class+'"></i>',
+										'</button>'
+									].join('');
+							}
+							break;
 						case "edit_copy_delete" :
 							val = this._edit+this._copy+this._delete;
 							break;
@@ -126,8 +152,16 @@ class CardTable {
 						case "delete" :
 							val = this._delete;
 							break;
+						case "check_icon" :
+							val = ' class="check_icon"';
+							val += ' accesskey="'+this.options.header[key]["accesskey"]+'"';
+							val += ' target="'+this.options.header[key]["target"]+'"';
+							break;
 					}
 					vals += val;
+				}
+				if(text==="imgurl" && util.isEmpty(vals)){
+					vals = "/img/no_img.png";
 				}
 				_row = _row.replace_all('#'+text+'#', vals);
 			}
@@ -141,9 +175,42 @@ class CardTable {
 			else {
 				_row = _row.replace_all('#limit_ratio_color#', "bg-danger");
 			}
+			_row = _row.replace_all('#button#', "");
 			body += _row;
 		}
 		return body;
+	};
+	__isVisible(data, _visible){
+		var _isVisible = true;
+		//if field have multiple outputs then visible propety setting
+		//usage visible setting is visible : {field : exist of this.tempdata[i][field] , value : equal this.tempdata[i][field]
+		if(_visible && _visible != null && _visible["field"] != null &&  _visible["value"] != null ){
+			_isVisible = false;
+			if(!data[_visible["field"]]){
+				if(typeof data[_visible["field"]] == "number"){
+					data[_visible["field"]] = 0;
+				}
+				else {
+					data[_visible["field"]] = "";
+				}
+			}
+			if(!_visible["fomula"]) _visible["fomula"] = "equal";
+			switch(_visible["fomula"]){
+				case "equal":
+					if(data[_visible["field"]] == _visible["value"]) _isVisible = true;
+					break;
+				case "not":
+					if(data[_visible["field"]] != _visible["value"]) _isVisible = true;
+					break;
+				case "greater":
+					if(util.diffVal(data[_visible["field"]], _visible["value"]) > 0) _isVisible = true;
+					break;
+				case "less":
+					if(util.diffVal(data[_visible["field"]], _visible["value"]) < 0) _isVisible = true;
+					break;
+			}
+		}
+		return _isVisible;
 	};
 	__eventSetting() {
 		this._table.find('button').unbind("click");
@@ -161,6 +228,13 @@ class CardTable {
 				}
 			});
 		}
+			$('li.check_icon img', this._table).click(function(event){
+				event.preventDefault();
+				var idx = $("#__index__", $(this).parent().parent()).val();
+				if (idx >= 0) {
+					_self.options.onLinkClick.call(undefined, $(this).parent().parent(), _self.tempdata[idx]);
+				}
+			});
 		if(this._table.find('button.btn').length){
 			this._table.find('button.btn').on("click", function(event){
 				event.preventDefault();
@@ -170,12 +244,12 @@ class CardTable {
 				}
 			});
 		}
-		if(this._table.find('div.mailbox-attachment-icon').length){
-			this._table.find('div.mailbox-attachment-icon').on("click", function(event){
+		if(this._table.find('li:not(.check_icon) div.mailbox-attachment-icon').length){
+			this._table.find('li:not(.check_icon) div.mailbox-attachment-icon').on("click", function(event){
 				event.preventDefault();
 				var obj = $("#__index__", $(this).parent());
 				if (obj.val() >= 0) {
-					_checkboxChange(obj.parent());
+					_self._checkboxChange(obj.parent());
 				}
 			});
 		}
@@ -282,10 +356,15 @@ class CardTable {
 	selectAll(unchecked) {
 		var checked = true;
 		if(unchecked) checked = false;
+		/*
 		this._table.find('._allcheck').prop('checked', checked);
 		this._table.find('input:checkbox').prop('checked', checked);
-		_checkboxChange();
-
+		*/
+		this._table.find('li').removeClass("active");
+		if(checked){
+			this._table.find('li').addClass("active");
+		}
+		this._checkboxChange();
 	};
 	//if you want to select of this searched data
 	selectData(index, field, value, unchecked) {
@@ -293,10 +372,11 @@ class CardTable {
 		if(rowNo>=0) {
 			var check = true;
 			if(unchecked) check = false;
-			$("td>input[type='checkbox']:eq("+rowNo+")", this._table).each(function(i){
-				$(this).prop("checked", check);
-			});
-			_checkboxChange();
+			$("li:eq("+rowNo+")", this._table).removeClass("active");
+			if(checked){
+				$("li:eq("+rowNo+")", this._table).addClass("active");
+			}
+			this._checkboxChange();
 			return true;
 		}
 		return false;
@@ -305,8 +385,8 @@ class CardTable {
 	getSelectData(field) {
 		var selectRow = [];
 		var result = [];
-		$("input[type='checkbox']:checked", this._table).each(function(i){
-			var rowNo = $("#__index__", $(this).parent().parent()).val();
+		$("li.active", this._table).each(function(i){
+			var rowNo = $("#__index__", $(this)).val();
 			if(util.isInteger(rowNo)){
 				selectRow.push(rowNo);
 			}

@@ -29,7 +29,7 @@ class commonApplication extends Application
 				'/getedit/:query_code'  => array('controller' => 'comService', 'action' => 'query', 'method' => 'edit'),
 				'/getedit/:query_code/:ID'  => array('controller' => 'comService', 'action' => 'query', 'method' => 'edit'),
 				'/query/:query_code'   =>  array('controller' => 'comService', 'action' => 'query'),
-				'/getgroupcode'   =>  array('controller' => 'comService', 'action' => 'query', 'query_code' => 'get_group_code_enc','cache'=>'-', 'system'=>'control'),
+				'/getgroupcode'   =>  array('controller' => 'comService', 'action' => 'query', 'query_code' => 'get_group_code_enc','cache'=>'-'),
 				'/download/:file'   =>  array('controller' => 'comService', 'action' => 'download','cache'=>'-'),
 				'/getfile/:file'   =>  array('controller' => 'comService', 'action' => 'getfile','cache'=>'-'),
 				'/export/:query_code'   =>  array('controller' => 'comService', 'action' => 'export', 'method' => 'export','cache'=>'-'),
@@ -37,8 +37,11 @@ class commonApplication extends Application
 				'/delete/:query_code'   =>  array('controller' => 'comService', 'action' => 'query', 'method' => 'del','cache'=>'-'),
 				'/import/:query_code'   =>  array('controller' => 'comService', 'action' => 'import'),
 				'/upload'   =>  array('controller' => 'comService', 'action' => 'upload'),
+				'/mail'   =>  array('controller' => 'comService', 'action' => 'send_mail'),
 				'/getpage/:page_code'   =>  array('controller' => 'comService', 'action' => 'query',  'query_code' => 'get_page', 'system'=>'control', 'cache'=>'-'),
+				'/getpage/:page_code/:method/:ID'   =>  array('controller' => 'comService', 'action' => 'get_editpage', 'cache'=>'-'),
 				'/gettree/:tree_code'   =>  array('controller' => 'comService', 'action' => 'query',  'query_code' => 'get_treemenu', 'system'=>'control', 'cache'=>'-'),
+				//getpage/m_code_add/edit/110
 
 				'/forbidden'   =>  array('controller' => 'comView', 'action' => 'requireUrl', 'path' => 'page/control/forbidden.php'),
 				'/sessionTimeout'   =>  array('controller' => 'comView', 'action' => 'redirectUrl', 'path' => '/login?error=1'),

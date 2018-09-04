@@ -7,7 +7,23 @@
 	"use strict";
 
 	var _utils = {
-
+		isJson : function(val){
+			var res = this.toJson(val);
+			if(res!==null){
+				return true;
+			}
+			return false;
+		},
+		toJson : function(val){
+			if(!this.isEmpty(val) && val.indexOf(":")<0) return null;
+			try {
+				var _r = JSON.parse(val);
+				return _r;
+			}
+			catch(e){
+			}
+			return null;
+		},
 		/**
 		* 整数変換 :
 		* @method toInt
@@ -616,9 +632,11 @@
 				var len = val.length;
 				var _savedVal = this.getLocalData(name);
 				if(_savedVal == null ) _savedVal = "";
+				/*
 				var size = sessionStorage.getItem("l");
 				size = this.toInt(size) + len - _savedVal.length;
 				sessionStorage.setItem("l", size);
+				*/
 				var _maxString = 30000;
 				for(var i=0;i<100;i++){
 					var _name = name+"["+i+"]";
