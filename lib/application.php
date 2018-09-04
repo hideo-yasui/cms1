@@ -176,6 +176,7 @@ abstract class Application
 				}
 				else {
 					sendJSONResponse($response);
+					@TXT_LOG("service", $_SERVER['SCRIPT_NAME'], basename(__FILE__),__LINE__, "-------------", "runAction END",$controller_name, $action,"-------------") ;
 					exitProc($this->db);
 				}
 		}

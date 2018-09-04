@@ -95,8 +95,6 @@ function sendSlack($channel, $username, $icon, $message, $url) {
 	* @return Boolean  成功：true / 失敗：false
 	*/
 function sendMail($mail_from, $mail_to, $mail_title, $mail_body, $mail_cc='', $mail_bcc=''){
-	require_once('Mail.php');
-	require_once('Mail/mime.php');
 	if(!isset($mail_from) || empty($mail_from)) return false;
 	if(!isset($mail_to) || empty($mail_to)) return false;
 	if(!isset($mail_title) || empty($mail_title)) return false;
@@ -118,45 +116,25 @@ function sendMail($mail_from, $mail_to, $mail_title, $mail_body, $mail_cc='', $m
 
 	$mail_to = addressEncoding($mail_to, $org_encode);
 	$mail_from = addressEncoding($mail_from, $org_encode);
+
+	$header = "MIME-Version: 1.0\n";
+	$header .= "Content-Transfer-Encoding: 7bit\n";
+	$header .= "Content-Type: text/plain; charset=ISO-2022-JP\n";
+
 	// ヘッダー情報 Sender不要？
-	$headers = array(
-		'To'		=> $mail_to,
-		'From'		=> $mail_from,
-		'Subject'	=> $mail_title,
-	);
 	if(isset($mail_cc) && !empty($mail_cc)){
 		$mail_cc= str_replace("\n", "", $mail_cc);
 		$mail_cc = addressEncoding($mail_cc, $org_encode);
-		$headers['CC'] = $mail_cc;
+		$header .= "cc: ".$mail_cc."\n";
 	}
 	if(isset($mail_bcc) && !empty($mail_bcc)){
 		$mail_bcc= str_replace("\n", "", $mail_bcc);
 		$mail_bcc = addressEncoding($mail_bcc, $org_encode);
-		$headers['Bcc'] = $mail_bcc;
+		$header .= "bcc: ".$mail_bcc."\n";
 	}
-
-	/*
-	// インスタンス生成
-	$mime = & new Mail_mime($crlf);
-	$mime->setTXTBody($mail_body);
-
-	// 出力用パラメータ
-	$build_param = array(
-		"html_charset" => "UTF-8",
-		"text_charset" => "ISO-2022-JP",
-		"head_charset" => "ISO-2022-JP",
-	);
-	$body = $mime->get( $build_param );
-	$headers = $mime->headers($headers);
-	$mail = Mail::factory('mail');
-
-	$ret = $mail->send($mail_to, $headers, $body);
-	if(@PEAR::isError($ret)) {
-		return false;
-	}
-*/
-	return true;
-
+	$header .= "from: ".$mail_from;
+	return mb_send_mail($mail_to, $mail_title, $mail_body, $header);
+	//return true;
 }
 // ===========================================================
 /**

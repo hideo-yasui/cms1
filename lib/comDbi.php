@@ -60,10 +60,9 @@ class comDbi extends Dbi
 		$count = 0;
 		$name = "";
 		$option = "";
-		$type = "page";
 		$logging = true;
 		$query = "SELECT * FROM ".$this->config_db.".m_search ".$wherequery;
-		@TXT_LOG("debug", $_SERVER['SCRIPT_NAME'], basename(__FILE__),__LINE__, "execConfigSearch", $query) ;
+		//@TXT_LOG("debug", $_SERVER['SCRIPT_NAME'], basename(__FILE__),__LINE__, "execConfigSearch", $query) ;
 		$ret = $this->getDatatable($query);
 		if($ret["status"] !== "success"){
 			// dupe
@@ -76,7 +75,6 @@ class comDbi extends Dbi
 		else {
 			$m_query = $ret["result"];
 		}
-
 		if($status==="success"){
 			$decodeField = array("OPTION_STRING", "SELECT_STRING", "TABLE_STRING", "ORDER_STRING", "WHERE_STRING");
 			for($i=0;$i<count($decodeField);$i++){
@@ -89,6 +87,7 @@ class comDbi extends Dbi
 			$system = $m_query[0]["SYSTEM_CODE"];
 			$name = $m_query[0]["NAME"];
 			$option = $m_query[0]["OPTION_STRING"];
+			$type = $m_query[0]["TYPE"];
 
 			$this->dbChange($system);
 			$countquery = "SELECT COUNT(*) AS COUNT FROM ".$m_query[0]["TABLE_STRING"];

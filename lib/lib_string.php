@@ -236,5 +236,13 @@ function conv_array_to_text($input_array, $delimita, $encode='UTF-8'){
 	$textdata = $headerText."\r\n".$linedata;
 	return $textdata;
 }
-
+function conv_string_to_json($src){
+	$dst = trim(str_replace('&quot;', '"', $src));
+	$option = json_decode($dst, true);
+	if(empty($option)){
+		$option = '{'.$dst.'}';
+		$option = json_decode($option, true);
+	}
+	return $option;
+}
 ?>

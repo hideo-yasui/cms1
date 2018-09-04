@@ -247,3 +247,26 @@ function exitProc($dbconnection=NULL){
 
 	exit;
 }
+function TXT_LOG(){
+	$gPathList = $GLOBALS['gPathList'];
+	$now = date("Ym");
+	$message = "";
+	$argc = func_num_args();
+	for($i=0;$i<$argc;$i++){
+		$arg = func_get_arg($i);
+		if($i==0) $filepath = $gPathList["logs"].$now."_".$arg.".log";
+		else $message = $message.$arg."\t";
+	}
+	$message = str_replace("\r\n"," ",$message);
+	$message = str_replace("\r"," ",$message);
+	$message = str_replace("\n"," ",$message);
+
+	@logWrite($filepath, $message);
+}
+function logWrite($filepath, $msg){
+	$arrTime = explode('.',microtime(true));
+	$now = date('Y-m-d H:i:s', $arrTime[0]) . '.' .$arrTime[1];
+	$dat = $now.":".$msg."\n";
+	chmod($filepath, 0666);
+	file_put_contents($filepath, $dat, FILE_APPEND);
+}

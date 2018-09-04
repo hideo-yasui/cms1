@@ -215,9 +215,9 @@ class Dbi
 		if($result!==null){
 			$mtime = filemtime($path);
 			$mtime = date("Y/m/d H:i:s",$mtime);
-			$now =date("Y-m-d H:i:s");
-			$mtime=strtotime($mtime);
-			$now=strtotime($now);
+			$now = date("Y-m-d H:i:s");
+			$mtime = strtotime($mtime);
+			$now = strtotime($now);
 			$d = intval($now-$mtime);
 			//1分
 			if($d > 60){
@@ -252,7 +252,7 @@ class Dbi
 		$path = str_replace('?', '/', $path);
 		$paths = explode('/', $path);
 		$path = $_SERVER["SERVER_NAME"].'/';
-		for($i=2;$i<count($paths);$i++){
+		for($i=0;$i<count($paths);$i++){
 			$path.=$paths[$i].'/';
 		}
 		$path = trim($path, '/');
