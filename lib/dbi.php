@@ -9,7 +9,8 @@ class Dbi
 	public $dbuser = "dbadmin";
 	public $dbpass = "admindb";
 	//public $dbhost = "192.168.1.111";
-	public $dbhost = "192.168.100.20";
+	public $dbhost = "programming-school.ca9hxw1ybhmc.ap-northeast-1.rds.amazonaws.com";
+	//public $dbhost = "192.168.100.20";
 	public $db;
 
 	/**
@@ -32,6 +33,7 @@ class Dbi
 		$this->db = mysqli_init();
 		$this->db->options(MYSQLI_OPT_INT_AND_FLOAT_NATIVE, 1);
 		$this->db->real_connect($persistent.$this->dbhost, $this->dbuser, $this->dbpass, $this->dbname, intval($DB_PORT));
+
 		if ( $this->db ) {
 			mysqli_set_charset($this->db , "utf8") ;
 		}
