@@ -274,12 +274,12 @@ $(function(){
 		"user_name" : "田中　恵一",
 		"user_kana" : "たなか　けいいち",
 		"user_parent_name" : "田中　洋子",
-		"contact_email" : "yasumihosi@gmail.co.jp",
-		"contact_email_confirm" : "yasumihosi@gmail.co.jp",
+		"contact_email" : "yasumihosi@gmail.com",
+		"contact_email_confirm" : "yasumihosi@gmail.com",
 		"contact_body" : "子どもの教育\nこのままでいいか相談したい\n宜しくお願い致します。"
 	};
 	base.pageOpen("edit");
-	//base.pageSettinged("edit", data);
+	base.pageSettinged("edit", null);
 	$(".btn[accesskey=_post]").on("click", function(){
 		console.log("btn._post");
 		if(!front.validateFormValue("edit")) return false;

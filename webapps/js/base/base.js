@@ -187,6 +187,7 @@
 		});
 		$(document).unbind("keydown");
 		$(document).on("keydown", function(e){
+			if(!e.key || util.isEmpty(e.key)) return;
 			console.log("["+e.key+"]["+e.ctrlKey+"]["+e.shiftKey+"]["+e.altKey+"]");
 			switch(e.key.toLowerCase()){
 				case "i":
