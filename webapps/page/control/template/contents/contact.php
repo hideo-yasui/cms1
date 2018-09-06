@@ -279,7 +279,7 @@ $(function(){
 		"contact_body" : "子どもの教育\nこのままでいいか相談したい\n宜しくお願い致します。"
 	};
 	base.pageOpen("edit");
-	base.pageSettinged("edit", data);
+	//base.pageSettinged("edit", data);
 	$(".btn[accesskey=_post]").on("click", function(){
 		console.log("btn._post");
 		if(!front.validateFormValue("edit")) return false;
@@ -305,6 +305,7 @@ $(function(){
 					base.pageClose("edit_conirm");
 					base.pageClose("edit");
 					base.pageOpen("edit_send");
+					service.getAjax(true, "/mail", {});
 				},
 				function(xhr, st, err) {
 					/*error*/
