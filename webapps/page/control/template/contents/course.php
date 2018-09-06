@@ -125,7 +125,7 @@
 				<div class="row">
 					<div class="card-body">
 						<strong><i class="fa fa-question-circle  mr-1"></i>RaspberryPi（ラズベリーパイ）とは</strong>
-						<img class="profile-user-img img-fluid float-right" src="/img/school/raspberrypi.jpg" alt="" />
+						<img class="profile-user-img img-fluid float-right" src="/img/school/raspberrypi.JPG" alt="" />
 						<p class="text-muted">
 							RaspberryPi（ラズベリーパイ）は、イギリスのラズベリー財団にて開発された教育用の小型PCです。
 							<br>
@@ -136,13 +136,11 @@
 						<hr>
 						<strong><i class="fa fa-chalkboard-teacher  mr-1"></i>学習内容</strong>
 						<p class="text-muted">
-							RaspberryPiに、RaspbianというOSをインストールし、
-							<br>
-							開発環境を作るところからスタートします。
+							RaspberryPiに開発環境を作り、
 							<br>
 							最初はLEDを点けたり消したりするところから、
 							<br>
-							徐々にモーターやセンサーなどの複雑な部品の制御方法を覚えます
+							徐々にモーターやセンサーなどの複雑な部品の制御方法を覚えます。
 							<br>
 							<br>
 							RaspberryPiもScratchを使ってプログラミングを行います。
@@ -152,7 +150,7 @@
 						<p class="text-muted">
 							1か月を目安に製作する目標のガジェット・機能を決め、順番に開発を進めます。
 							<br>
-							わからない場合や、詰まった場合その場で解消でき、
+							わからない場合や、詰まった場合は、その場で解消でき、
 							<br>
 							目標とするガジェットにカスタマイズしていきます。
 						</p>
@@ -245,7 +243,6 @@
 					<tr>
 						<th class="bg-info">その他サービス</th>
 						<td>
-							・ウォーターサーバー<br>
 							・書籍の貸し出し（一人2冊まで、2週間貸出し可能）<br>
 							・RaspberryPi・その他、電子部品の代理購入（ご相談ください）
 						</td>
