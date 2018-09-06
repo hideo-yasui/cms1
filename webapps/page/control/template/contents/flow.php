@@ -25,7 +25,10 @@
 									<tr>
 										<th class="bg-success">お問い合わせフォーム</th>
 										<td>
-											<a class="btn btn-primary" href="./contact">お申込み・お問い合わせはこちら</a>
+											<a class="btn btn-primary" href="./contact">
+												<i class="fa fa-phone mr-1"></i>
+												お申込み・お問い合わせはこちら
+											</a>
 										</td>
 								</tr>
 							</tbody>
