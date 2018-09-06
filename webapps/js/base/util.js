@@ -238,7 +238,7 @@
 		*/
 		isKana: function(val) {
 			if(this.isZenkaku(val)){
-				if (val.match(/^[\u30A0-\u30FF]+$/)) return true;
+				if (val.replace_all("　", "").match(/^[\u30A0-\u30FF]+$/)) return true;
 			}
 			else {
 				if (val.match(/^[\uFF65-\uFF9F]+$/))    return true;

@@ -67,7 +67,8 @@ h2.sub-title:after {
 			</div>
 		</div>
 		<div class="row">
-			<div class="col-12">
+			<div class="col-12 bg-info p-2">
+				<hr>
 				放課後プログラミング塾.inc
 			</div>
 		</div>

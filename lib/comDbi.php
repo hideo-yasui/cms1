@@ -10,6 +10,7 @@ class comDbi extends Dbi
 {
 	public $config_db = "control";
 	public $system = "";
+	public $dbname = "";
 
 	protected $hidden_post_paramater = array(
 		"password", "password_confirm", "password_old"

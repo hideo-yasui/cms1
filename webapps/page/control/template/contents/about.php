@@ -8,7 +8,10 @@
 				未来をより良いものに変えていきたいと考えております。
 			</h6>
 			<div class="card-body login-card-body">
-				<h2 class="sub-title">やりたいことを実現する「自己デザイン型の人間」への成長</h2>
+				<h2 class="sub-title">
+					<i class="fa fa-hand-point-right mr-1"></i>
+					やりたいことを実現する「自己デザイン型の人間」への成長
+				</h2>
 				<div class="row">
 						<div class="card-body">
 							学校の勉強は、大学に入るため、そして、就職のためという考え方は根強いと思います。
@@ -31,7 +34,9 @@
 							<br>
 						</div>
 					</div>
-					<h2 class="sub-title">必要なことを勉強するから、上達していく</h2>
+					<h2 class="sub-title">
+						<i class="fa fa-hand-point-right mr-1"></i>
+						必要なことを勉強するから、上達していく</h2>
 					<div class="row">
 						<div class="card-body">
 							勉強の必要性を理解し、学習するお子様のほうが少ないと思います。
@@ -62,7 +67,9 @@
 							こうしたプロセスが、本当の勉強だと考えております。
 						</div>
 					</div>
-					<h2 class="sub-title">デジタルディバイドによる格差解消</h2>
+					<h2 class="sub-title">
+						<i class="fa fa-hand-point-right mr-1"></i>
+						デジタルディバイドによる格差解消</h2>
 					<div class="row">
 						<div class="card-body">
 							デジタルディバイドという言葉はご存知でしょうか？

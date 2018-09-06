@@ -41,7 +41,8 @@
 		linkProc : linkProc,
 		exportProc : exportProc,
 		showPage : showPage,
-		pageOpen : pageOpen
+		pageOpen : pageOpen,
+		pageClose : pageClose
 	};
 	//---------------------------------------------------
 	//onload系～
@@ -68,12 +69,6 @@
 				if(!util.isEmpty(formId) && !util.isEmpty(pagecode)){
 					_isPageLoad=true;
 					showEditPage(formId, pagecode,lq, data, su);
-					/*
-					showPage(formId, pagecode, function(){
-						dom.setEditForm(data, formId, _isUpdate);
-						pageOpen(formId);
-					});
-					*/
 				}
 			});
 		}
@@ -866,22 +861,10 @@
 			case "dialog":
 				var pagecode = _currentRequest["query_code"]+"_"+target;
 				showEditPage(_dialogId, pagecode,_currentRequest["query_code"], data, _isUpdate);
-				/*
-				showPage(_dialogId, pagecode, function(){
-					dom.setEditForm(data, _dialogId, _isUpdate);
-					pageOpen(_dialogId);
-				});
-				*/
 				break;
 			case "subpage":
 				var pagecode = _currentRequest["query_code"]+"_"+target;
 				showEditPage(_editPageId, pagecode,_currentRequest["query_code"], data, _isUpdate);
-				/*
-				showPage(_editPageId, pagecode, function(){
-					dom.setEditForm(data, _editPageId, _isUpdate);
-					pageOpen(_editPageId);
-				}, windowName);
-				*/
 				break;
 			case "message":
 				if(!util.isEmpty(target) && !util.isEmpty(alt)){

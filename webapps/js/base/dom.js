@@ -743,6 +743,8 @@
 			$("div, span, td, .lbl", $("#"+form)).each(function(){
 				var field = $(this).attr("id");
 				var type =  $(this).attr("type");
+				var accesskey =  $(this).attr("accesskey");
+				var alt =  $(this).attr("alt");
 
 				if(util.isEmpty(field)) return;
 				if(!(field in data)) return;
@@ -751,6 +753,19 @@
 					val = util.setFileUnit(val);
 				}
 				if(typeof val === 'string' && val.indexOf("\n")>=0) val = val.replace_all("\n", "<br>");
+
+				if(!util.isEmpty(accesskey) && !util.isEmpty(val)){
+					switch (accesskey){
+						case "m_code":
+							var group = field;
+							if(!util.isEmpty(alt)) group = alt;
+							var _codedata = service.getCodeData(group, val);
+							if(_codedata != null){
+								val = _codedata[1];
+							}
+							break;
+						}
+				}
 				$(this).html(val);
 			});
 			$("a", $("#"+form)).each(function(){

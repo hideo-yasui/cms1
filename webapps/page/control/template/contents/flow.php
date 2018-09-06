@@ -99,7 +99,12 @@
 						<br>
 						当塾の授業料は月謝制となります。
 						<br>
-						料金についての詳細は<a href="course#charge">こちら</a>にてご確認ください。
+						料金についての詳細は
+							<a class="btn mx-1" href="course#charge">
+								<i class="fa fa-chevron-circle-right mr-1"></i>
+								こちら
+							</a>
+						にてご確認ください。
 					</div>
 					<!-- /.card-body -->
 				</div>

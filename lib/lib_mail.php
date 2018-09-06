@@ -106,11 +106,11 @@ function sendMail($mail_from, $mail_to, $mail_title, $mail_body, $mail_cc='', $m
 	$crlf = "\n"; // 現在の改行コード
 	// UTF-8 => JIS
 	$org_encode = mb_internal_encoding();
-
+/*
 	$mail_title = mb_convert_encoding( $mail_title, "ISO-2022-JP", "UTF-8" );
 	mb_internal_encoding( "ISO-2022-JP" );
 	$mail_title = mb_encode_mimeheader( $mail_title, "ISO-2022-JP" );
-
+*/
 	mb_internal_encoding($org_encode);
 	$mail_body = mb_convert_encoding( $mail_body, "ISO-2022-JP", "UTF-8" );
 
@@ -133,6 +133,7 @@ function sendMail($mail_from, $mail_to, $mail_title, $mail_body, $mail_cc='', $m
 		$header .= "bcc: ".$mail_bcc."\n";
 	}
 	$header .= "from: ".$mail_from;
+	@TXT_LOG("mail", $_SERVER['SCRIPT_NAME'], basename(__FILE__),__LINE__, $mail_to, $mail_title, $mail_body, $header);
 	return mb_send_mail($mail_to, $mail_title, $mail_body, $header);
 	//return true;
 }

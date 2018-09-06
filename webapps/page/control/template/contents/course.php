@@ -3,7 +3,12 @@
 		<div class="" style="min-height:768px;">
 			<h2 class="main-title">学習内容について</h2>
 			<h6 class="mb-4 ml-4">タイピングトレーニング、カリキュラム別のワークショップ、自立学習を組み合わせ実施していきます。<br>
-				カリキュラム別の内容については<a href="#curriculum" >こちら</a>をご確認ください
+				カリキュラム別の内容については
+				<a class="btn mx-1" href="#curriculum">
+					こちらをご確認
+					<i class="fa fa-chevron-circle-down ml-1"></i>
+				</a>
+				をご確認ください
 			</h6>
 
 			<div class="row">
