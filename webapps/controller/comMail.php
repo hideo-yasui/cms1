@@ -96,6 +96,6 @@ class comMail extends comService
 			}
 		}
 		@TXT_LOG("mail", $_SERVER['SCRIPT_NAME'], basename(__FILE__),__LINE__, "sendMail", "end/success=".count($success_mailids)."/error=".count($error_mailids)) ;
-		return $this->getResponce("sucess", "", "end/success=".count($success_mailids)."/error=".count($error_mailids)  );
+		return $this->getResponce(null, "", "end/success=".count($success_mailids)."/error=".count($error_mailids)  );
 	}
 }
