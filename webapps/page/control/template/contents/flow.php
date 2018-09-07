@@ -16,28 +16,31 @@
 						<br>
 						</div>
 						<div class="row mb-2">
-							<table class="table table-striped">
+							<table class="table-striped">
 								<tbody>
 									<tr>
-										<tr>
-											<th class="bg-success text-center">
-												<i class="fa fa-phone mr-1"></i>
-												<span class="btn-label">お電話でのご連絡</span>
-											</th>
-											<td><b class="text-lg" style="color:#FF6600;">090-1234-4678</b><br>
-												月曜～土曜 受付時間 9:00～22:00
-											</td>
-										</tr>
-										<tr>
-											<th class="bg-success text-center">
-												<i class="fa fa-envelope mr-1"></i>
-												<span class="btn-label">お問い合わせフォーム</span>
-											</th>
-											<td>
-												<a class="btn btn-primary" href="./contact">
-													お申込み・お問い合わせはこちら
-												</a>
-											</td>
+										<th class="p-2 bg-success text-center" style="vertical-align: middle;" width=20%>
+											<i class="fa fa-phone mr-1"></i>
+											<span class="btn-label">
+												お電話での<br>ご連絡
+											</span>
+										</th>
+										<td class="p-2 pl-4"><b class="text-lg" style="color:#FF6600;">090-1234-4678</b><br>
+											月曜～土曜 受付時間 9:00～22:00
+										</td>
+									</tr>
+									<tr>
+										<th class="p-2 bg-success text-center" style="vertical-align: middle;" width=20%>
+											<i class="fa fa-envelope mr-1"></i>
+											<span class="btn-label">
+												お問合せ<br>フォーム
+											</span>
+										</th>
+										<td class="p-2 pl-4">
+											<a class="btn btn-primary" href="./contact">
+												お申込み・お問い合わせはこちら
+											</a>
+										</td>
 									</tr>
 								</tbody>
 							</table>
