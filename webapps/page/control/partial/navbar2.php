@@ -8,8 +8,8 @@ else {
 ?>
 <div class="pl-2 bg-white">
 	<span class="text-lg"><img src="/img/school/logo.png"  style="width:200px; height:auto;"/></span>
-	<span class="text-mm ml-3 d-none d-sm-inline-block">～プログラミング学習を通した自立学習の促進！～</span>
-	<a class="float-right mr-2 mt-1 text-lg" data-toggle="dropdown" href="#" style="color:#000;">
+	<span class="text-sm ml-3 d-none d-sm-inline-block">～プログラミング学習を通した自立学習の促進！～</span>
+	<a class="float-right mr-4 mt-3" data-toggle="dropdown" href="#" style="color:#000;font-size:2rem;">
 		<i class="fa fa-bars"></i>
 	</a>
 	<div class="bg-white dropdown-menu dropdown-menu-right">

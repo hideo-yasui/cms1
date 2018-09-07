@@ -5514,17 +5514,18 @@ button.close, button.mailbox-attachment-close {
 	align-items: center;
 	/*2018/08/26 カルーセル微調整*/
 	width: 100%;
-	padding-left:5%;
-	padding-right:5%;
 	padding-bottom:32px;
 	transition: transform 0.6s ease;
 	backface-visibility: hidden;
 	perspective: 1000px;
 }
 
-@media screen and (prefers-reduced-motion: reduce) {
-	.carousel-item {
-		transition: none;
+.carousel-item img{
+	width:100%;
+}
+@media (max-width: 600px) {
+	.carousel-item img{
+		width:169vw;
 	}
 }
 
@@ -5625,6 +5626,11 @@ button.close, button.mailbox-attachment-close {
 	text-align: center;
 	opacity: 0.5;
 }
+@media screen and (prefers-reduced-motion: reduce) {
+	.carousel-item {
+		transition: none;
+	}
+}
 
 .carousel-control-prev:hover, .carousel-control-prev:focus,
 .carousel-control-next:hover,
@@ -5636,11 +5642,19 @@ button.close, button.mailbox-attachment-close {
 }
 
 .carousel-control-prev {
+	/*2018/08/26 カルーセル微調整*/
+	/*
 	left: 0;
+	*/
+	left: -5%;
 }
 
 .carousel-control-next {
+	/*2018/08/26 カルーセル微調整*/
+	/*
 	right: 0;
+	*/
+	right: -5%;
 }
 
 .carousel-control-prev-icon,
@@ -13127,10 +13141,6 @@ a.text-muted:hover {
 .text-bold, .text-bold.table td, .text-bold.table th {
 	font-weight: 700;
 }
-.text-mm {
-	font-size: 0.6rem;
-}
-
 .text-sm {
 	font-size: 0.875rem;
 }

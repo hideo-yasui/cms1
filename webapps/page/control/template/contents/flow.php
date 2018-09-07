@@ -10,29 +10,38 @@
 					</div>
 					<!-- /.card-header -->
 					<div class="card-body">
+						<div class="row">
 						お電話、または、お問い合わせフォームより、説明会の日程をご予約下さい。
 						<br>
 						<br>
-						<table class="table table-striped mb-2">
-							<tbody>
-								<tr>
+						</div>
+						<div class="row mb-2">
+							<table class="table table-striped">
+								<tbody>
 									<tr>
-										<th class="bg-success">お電話でのご連絡</th>
-										<td class="text-lg"><b style="color:#FF6600;">090-1234-4678</b><br>
-											月曜～土曜 受付時間 9:00～22:00
-										</td>
-									</tr>
-									<tr>
-										<th class="bg-success">お問い合わせフォーム</th>
-										<td>
-											<a class="btn btn-primary" href="./contact">
+										<tr>
+											<th class="bg-success text-center">
 												<i class="fa fa-phone mr-1"></i>
-												お申込み・お問い合わせはこちら
-											</a>
-										</td>
-								</tr>
-							</tbody>
-						</table>
+												<span class="btn-label">お電話でのご連絡</span>
+											</th>
+											<td><b class="text-lg" style="color:#FF6600;">090-1234-4678</b><br>
+												月曜～土曜 受付時間 9:00～22:00
+											</td>
+										</tr>
+										<tr>
+											<th class="bg-success text-center">
+												<i class="fa fa-envelope mr-1"></i>
+												<span class="btn-label">お問い合わせフォーム</span>
+											</th>
+											<td>
+												<a class="btn btn-primary" href="./contact">
+													お申込み・お問い合わせはこちら
+												</a>
+											</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
 					</div>
 					<!-- /.card-body -->
 				</div>

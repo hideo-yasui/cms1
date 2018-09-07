@@ -184,6 +184,7 @@ class comView extends comService
 			'partial' => $this->system."/partial/",
 			'template' => $this->system."/template/",
 			'contents' => $this->system."/template/contents/",
+			'contents_partial' => $this->system."/template/contents/partial/",
 			'meta' => $this->system."/template/meta/"
 		);
 		$data["_system"] = $this->application->system_info;
