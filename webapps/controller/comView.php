@@ -91,7 +91,7 @@ class comView extends comService
 			$data = $values["data"];
 			$option = array();
 			$isAuth = "";
-			if(count($data)>0){
+			if(isset($data) && count($data)>0 && isset($data[0])){
 				$data = $data[0];
 			}
 			else {

@@ -7,9 +7,9 @@ else {
 }
 ?>
 <div class="pl-2 bg-white">
-	<span class="text-lg"><img src="/img/school/logo.png"  style="width:200px; height:auto;"/></span>
+	<a href="./" class="text-lg"><img src="/img/school/logo.png"  style="width:200px; height:auto;"/></a>
 	<span class="text-sm ml-3 d-none d-sm-inline-block">～プログラミング学習を通した自立学習の促進！～</span>
-	<a class="float-right mr-4 mt-3" data-toggle="dropdown" href="#" style="color:#000;font-size:2rem;">
+	<a class="float-right mr-4 mt-3" data-toggle="dropdown" href="javascript:void(0);" style="color:#000;font-size:2rem;">
 		<i class="fa fa-bars"></i>
 	</a>
 	<div class="bg-white dropdown-menu dropdown-menu-right">
@@ -42,7 +42,7 @@ for($i=0,$n=count($headermenu);$i<$n;$i++){
 	$option = $headermenu[$i]["OPTION_STRING"];
 	$style = $headermenu[$i]["STYLE"];
 echo <<<EOT
-	<li class="nav-item d-none d-sm-inline-block" >
+	<li class="nav-item d-none d-md-inline-block" >
 		<a href="/$option" class="nav-link">$name
 		</a>
 	</li>

@@ -1,3 +1,4 @@
+
 <!-- Content Wrapper. Contains page content -->
 <div class="" style="width:95%;margin:0 auto;">
 	<div class="" style="min-height:768px;">
@@ -268,6 +269,8 @@
 		<!-- /.content -->
 	</div>
 </div>
+<?php view($data["_directory"]["meta"]."script.php", $data);?>
+
 <script>
 $(function(){
 	var data = {

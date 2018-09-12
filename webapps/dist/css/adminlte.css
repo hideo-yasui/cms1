@@ -3664,6 +3664,8 @@ input[type="button"].btn-block {
 .nav-link {
 	display: block;
 	padding: 0.5rem 1rem;
+	font-size: .8rem;
+	/*2018/09/12 ヘッダーの文字サイズを調整*/
 }
 
 .nav-link:hover, .nav-link:focus {
@@ -10651,7 +10653,7 @@ label:not(.form-check-label):not(.custom-file-label) {
 }
 
 .small-box h3 {
-	font-size: 38px;
+	font-size: 1.2rem;
 	font-weight: bold;
 	margin: 0 0 10px 0;
 	white-space: nowrap;
@@ -10659,7 +10661,7 @@ label:not(.form-check-label):not(.custom-file-label) {
 }
 
 .small-box p {
-	font-size: 15px;
+	font-size: 0.7rem;
 }
 
 .small-box p > small {
@@ -11352,7 +11354,11 @@ label:not(.form-check-label):not(.custom-file-label) {
  */
 .timeline {
 	position: relative;
+	/*2018/09/12 タイムラインのアイコンを大きくした調整*/
+	/*
 	margin: 0 0 30px 0;
+	*/
+	margin: 0 0 70px 0;
 	padding: 0;
 	list-style: none;
 }
@@ -11395,7 +11401,9 @@ label:not(.form-check-label):not(.custom-file-label) {
 
 .timeline > li > .timeline-item > .time {
 	color: #999;
+	/*2018-09-10 タイムライン調製
 	float: right;
+	*/
 	padding: 10px;
 	font-size: 12px;
 }
@@ -11420,15 +11428,15 @@ label:not(.form-check-label):not(.custom-file-label) {
 .timeline > li > .fa,
 .timeline > li > .glyphicon,
 .timeline > li > .ion {
-	width: 30px;
-	height: 30px;
-	font-size: 15px;
-	line-height: 30px;
+	width: 50px;
+	height: 50px;
+	font-size: 25px;
+	line-height: 50px;
 	position: absolute;
 	background: #adb5bd;
 	border-radius: 50%;
 	text-align: center;
-	left: 18px;
+	left: 0.8vw;
 	top: 0;
 }
 
@@ -11736,8 +11744,11 @@ label:not(.form-check-label):not(.custom-file-label) {
 	-ms-transform: translate(0, 0);
 	transform: translate(0, 0);
 	padding: 10px;
+	/*
+	2018/09/11 FAQページのための調整
 	height: 250px;
 	overflow: auto;
+	*/
 }
 
 .direct-chat-msg,
@@ -11747,6 +11758,8 @@ label:not(.form-check-label):not(.custom-file-label) {
 
 .direct-chat-msg {
 	margin-bottom: 10px;
+	max-width:768px;
+	margin:0 auto;
 }
 
 .direct-chat-msg::after {
@@ -11803,6 +11816,15 @@ label:not(.form-check-label):not(.custom-file-label) {
 	border-right-color: transparent;
 	border-left-color: #d2d6de;
 }
+.circle-font-icon {
+	font-size: 20px;
+	border-radius: 50%;
+	float: left;
+	width: 40px;
+	height: 40px;
+	line-height: 40px;
+	text-align: center;
+}
 
 .direct-chat-img {
 	border-radius: 50%;
@@ -11819,10 +11841,17 @@ label:not(.form-check-label):not(.custom-file-label) {
 	display: block;
 	margin-bottom: 2px;
 	font-size: 0.875rem;
+	line-height:40px;
 }
 
 .direct-chat-name {
 	font-weight: 600;
+	/*2018/09/12 FAQページのための調整*/
+	font-size:18px;
+}
+@media (max-width: 576px) {
+	.direct-chat-name {
+	}
 }
 
 .direct-chat-timestamp {
@@ -12409,7 +12438,7 @@ label:not(.form-check-label):not(.custom-file-label) {
 	/*
 	width: 100px;
 	*/
-	max-width:256px;
+	max-width:128px;
 	width:70%;
 	padding: 3px;
 	border: 3px solid #adb5bd;

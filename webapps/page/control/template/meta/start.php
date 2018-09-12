@@ -9,8 +9,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <!-- Font Awesome -->
-<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.1.0/css/all.css" integrity="sha384-lKuwvrZot6UHsBSfcMvOkWwlCMgc0TaWr+30HWe3a4ltaBwTZhyTEggF5tJv8tbt" crossorigin="anonymous">
-
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous">
 <!-- Ionicons -->
 <link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
 <!-- Bootstrap time Picker -->
@@ -41,19 +40,5 @@
 <script src="/js/plugins/slimScroll/jquery.slimscroll.min.js"></script>
 <!-- FastClick -->
 <script src="/js/plugins/fastclick/fastclick.js"></script>
-
 <!-- AdminLTE App -->
 <script src="/dist/js/adminlte.js"></script>
-<script src="/js/lib/utf.js"></script>
-<script src="/js/lib/base64.js"></script>
-<script src="/js/lib/inflate.js"></script>
-<script src="/js/lib/deflate.js"></script>
-<script src="/js/lib/timsort.js"></script>
-<script src="/js/base/util.js<?php echo "?v=".$GLOBALS['gEnvList']['version']; ?>"></script>
-<script src="/js/base/cardTable.js<?php echo "?v=".$GLOBALS['gEnvList']['version']; ?>"></script>
-<script src="/js/base/listTable.js<?php echo "?v=".$GLOBALS['gEnvList']['version']; ?>"></script>
-<script src="/js/base/fileUI.js<?php echo "?v=".$GLOBALS['gEnvList']['version']; ?>"></script>
-<script src="/js/base/dom.js<?php echo "?v=".$GLOBALS['gEnvList']['version']; ?>"></script>
-<script src="/js/base/service.js<?php echo "?v=".$GLOBALS['gEnvList']['version']; ?>"></script>
-<script src="/js/base/front.js<?php echo "?v=".$GLOBALS['gEnvList']['version']; ?>"></script>
-<script src="/js/base/base.js<?php echo "?v=".$GLOBALS['gEnvList']['version']; ?>"></script>

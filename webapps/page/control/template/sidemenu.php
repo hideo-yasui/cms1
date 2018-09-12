@@ -78,4 +78,5 @@
 
 </div>
 <!-- ./wrapper -->
+<?php view($data["_directory"]["meta"]."script.php", $data);?>
 <?php view($data["_directory"]["meta"]."end.php", $data);?>

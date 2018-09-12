@@ -1,4 +1,4 @@
-<h2 class="main-title">放課後プログラミング塾の3つの特徴</h2>
+<h2 class="main-title">Self-Studyの3つの特徴</h2>
 <div class="row">
 	<div class="col-md-12 bg-white">
 		<div class="card card-primary card-outline">

@@ -451,6 +451,12 @@ class comService extends Controller
 		session_destroy();
 		return $this->getResponce();
 	}
+	public function send_slack(){
+		if(sendSlack("admin_school", "INFO", ":ghost", "test message", 'https://hooks.slack.com/services/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')){
+			return $this->errorResponce();
+		}
+		return $this->getResponce();
+	}
 	public function send_mail(){
 		mb_language("Japanese");
 		mb_internal_encoding("UTF-8");

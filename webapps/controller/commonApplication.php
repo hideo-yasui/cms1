@@ -38,6 +38,7 @@ class commonApplication extends Application
 				'/import/:query_code'   =>  array('controller' => 'comService', 'action' => 'import'),
 				'/upload'   =>  array('controller' => 'comService', 'action' => 'upload'),
 				'/mail'   =>  array('controller' => 'comMail', 'action' => 'send'),
+				'/slack'   =>  array('controller' => 'comService', 'action' => 'send_slack'),
 				'/getpage/:page_code'   =>  array('controller' => 'comService', 'action' => 'query',  'query_code' => 'get_page', 'system'=>'control', 'cache'=>'-'),
 				'/getpage/:page_code/:method/:ID'   =>  array('controller' => 'comService', 'action' => 'get_editpage', 'cache'=>'-'),
 				'/gettree/:tree_code'   =>  array('controller' => 'comService', 'action' => 'query',  'query_code' => 'get_treemenu', 'system'=>'control', 'cache'=>'-'),

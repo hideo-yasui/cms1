@@ -1,18 +1,29 @@
 <!-- Content Wrapper. Contains page content -->
 	<div class="login-box" style="width:95%;margin:0 auto;">
 		<div class="" style="min-height:768px;">
-			<h2 class="main-title">放課後プログラミング塾の教育理念</h2>
+			<h2 class="main-title">Self-Studyとは？</h2>
+			<h3 class="card-title">
+				<img src="/img/school/logo.png" style="width:320px; height:auto;">
+			</h3>
 			<h6 class="mb-4">子供の将来のことを本気で考えた、プログラミング塾。<br>
 				今や、私たちの生活に、コンピューターや、ネットワークはなくてはならないものになりました。<br>
 				当塾で、時代に合った環境で学習し、テクノロジーの苦手意識を少しでもなくし、<br>
 				未来をより良いものに変えていきたいと考えております。
 			</h6>
+
+
 			<div class="card-body login-card-body">
 				<h2 class="sub-title">
 					<i class="fa fa-hand-point-right mr-1"></i>
-					やりたいことを実現する「自己デザイン型の人間」への成長
+					Self-Studyの教育理念
 				</h2>
-				<div class="row">
+				<div id="accordion">
+					<div class="card card-primary">
+						<div class="card-header">
+							<h4 class="card-title">
+									１．やりたいことを実現する「自己デザイン型の人間」への成長<br>
+							</h4>
+						</div>
 						<div class="card-body">
 							学校の勉強は、大学に入るため、そして、就職のためという考え方は根強いと思います。
 							<br>
@@ -26,7 +37,7 @@
 							しかし近年、終身雇用が崩壊し、前述した安定した就職という考え方は、難しくなっています。
 							<br>
 							<br>
-							人と違う経験を積み、何らかの専門性を持つことが、重要となってきており、
+							人と違う経験を積み、何らかの専門性を持つことが、重要となってきております。
 							<br>
 							こうした社会背景から、子どもたちの将来のため、やりたいことを進める学習を通し、
 							<br>
@@ -34,10 +45,12 @@
 							<br>
 						</div>
 					</div>
-					<h2 class="sub-title">
-						<i class="fa fa-hand-point-right mr-1"></i>
-						必要なことを勉強するから、上達していく</h2>
-					<div class="row">
+					<div class="card card-primary">
+						<div class="card-header">
+							<h4 class="card-title">
+									２．必要なことを勉強するから、上達していく
+							</h4>
+						</div>
 						<div class="card-body">
 							勉強の必要性を理解し、学習するお子様のほうが少ないと思います。
 							<br>
@@ -67,10 +80,12 @@
 							こうしたプロセスが、本当の勉強だと考えております。
 						</div>
 					</div>
-					<h2 class="sub-title">
-						<i class="fa fa-hand-point-right mr-1"></i>
-						デジタルディバイドによる格差解消</h2>
-					<div class="row">
+					<div class="card card-primary">
+						<div class="card-header">
+							<h4 class="card-title">
+									３．デジタルディバイドによる格差解消
+							</h4>
+						</div>
 						<div class="card-body">
 							デジタルディバイドという言葉はご存知でしょうか？
 							<br>
@@ -89,6 +104,7 @@
 					</div>
 				</div>
 
+			</div>
 
 		</div>
 

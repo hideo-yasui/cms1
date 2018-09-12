@@ -1,6 +1,6 @@
 <div class="row mb-4">
 	<div class="col-md-12">
-		<div id="main_carousel" class="carousel slide" data-ride="carousel" data-interval="3000">
+		<div id="main_carousel" class="carousel slide" data-ride="carousel" data-interval="5000">
 			<ol class="carousel-indicators">
 				<li data-target="#main_carousel" data-slide-to="0" class="active">●</li>
 				<li data-target="#main_carousel" data-slide-to="2" class="">●</li>
