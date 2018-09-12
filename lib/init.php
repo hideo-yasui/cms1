@@ -34,11 +34,11 @@ if(!file_exists($gPathList["_cache"])){
 	mkdir($gPathList["_cache"], '0755');
 }
 $gEnvList = array();
-$gEnvList["version"] 	= '1.0.0.2' ;
+$gEnvList["version"] 	= '1.0.0.3' ;
 
 // Slack WebHock End Point
-$gEnvList["SLACK_endpoint"]		= "";
-$gEnvList["SLACK_log_channel"]		= "system_log";
+$gEnvList["SLACK_endpoint"]		= "https://hooks.slack.com/services/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";
+$gEnvList["SLACK_log_channel"]		= "admin_school";
 $gEnvList["SLACK_template"]		= array();
 $gEnvList["SLACK_template"]["INFO"] = array("name" => "INFO", "icon" => ":speech_balloon:");
 $gEnvList["SLACK_template"]["WARNING"] = array("name" => "WARNING", "icon" => ":warning:");

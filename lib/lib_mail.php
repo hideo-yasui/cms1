@@ -72,10 +72,15 @@ function sendSlack($channel, $username, $icon, $message, $url) {
 	);
 	$options = array(
 	'http' => array(
+		"protocol_version" => "1.1",
 		'method' => 'POST',
 		'header' => 'Content-Type: application/json',
 		'content' => json_encode($_request),
-	)
+	),
+	'ssl' => array(
+			'verify_peer' => false,
+			'verify_peer_name' => false
+		)
 	);
 	$response = file_get_contents($url, false, stream_context_create($options));
 	if($response === 'ok') return true;

@@ -272,6 +272,6 @@ class Dbi
 		$str = str_replace(array("\r\n", "\r", "\n"), "<BR>", $str);
 		$str = str_replace("\t", " ", $str);
 
-		return "'".mysqli_real_escape_string($this->db, $str)."'";
+		return "'".@mysqli_real_escape_string($this->db, $str)."'";
 	}
 }
