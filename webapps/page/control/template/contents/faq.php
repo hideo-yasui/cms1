@@ -105,7 +105,7 @@
 			<div class="direct-chat-messages">
 				<div class="direct-chat-msg">
 					<div class="direct-chat-info bg-info pl-2">
-						<span class="direct-chat-name">Q.宿題はありますか</span>
+						<span class="direct-chat-name">Q.宿題はありますか？</span>
 					</div>
 				</div>
 				<div class="direct-chat-msg right">
@@ -123,7 +123,7 @@
 			<div class="direct-chat-messages">
 				<div class="direct-chat-msg">
 					<div class="direct-chat-info bg-info pl-2">
-						<span class="direct-chat-name">Q.家庭でも塾での学習内容を進めることは可能ですか</span>
+						<span class="direct-chat-name">Q.家庭でも塾での学習内容を進めることは可能ですか？</span>
 					</div>
 				</div>
 				<div class="direct-chat-msg right">
@@ -142,7 +142,7 @@
 			<div class="direct-chat-messages">
 				<div class="direct-chat-msg">
 					<div class="direct-chat-info bg-info pl-2">
-						<span class="direct-chat-name">Q.自分のPCを塾内で利用できますか</span>
+						<span class="direct-chat-name">Q.自分のPCを塾内で利用できますか？</span>
 					</div>
 				</div>
 				<div class="direct-chat-msg right">

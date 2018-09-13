@@ -11436,7 +11436,7 @@ label:not(.form-check-label):not(.custom-file-label) {
 	background: #adb5bd;
 	border-radius: 50%;
 	text-align: center;
-	left: 0.8vw;
+	left: 6px;
 	top: 0;
 }
 

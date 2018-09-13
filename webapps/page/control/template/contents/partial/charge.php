@@ -1,6 +1,7 @@
 <h2 class="main-title">授業料について</h2>
 <h6 class="mb-4 ml-4">パソコン系の教育サービスは初期費用がかかるイメージがあると思いますが、<br>
 	当塾ではたくさんの人に、テクノロジーに触れる機会を与えたいので、教材費はかかりません。<br>
+	ぜひ、他のプログラミング教室とくらべてみてください！
 </h6>
 <div class="card-body p-0">
 	<table class="table table-striped mb-5">
@@ -17,7 +18,7 @@
 			</tr>
 			<tr>
 				<th class="bg-info">入会金</th>
-				<td class="text-lg"><b style="color:#FF6600;">0円</b></td>
+				<td class="text-lg"><b style="color:#FF6600;">3500円</b></td>
 			</tr>
 			<tr>
 				<th class="bg-info">教材費</th>
