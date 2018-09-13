@@ -18,7 +18,7 @@
 			</tr>
 			<tr>
 				<th class="bg-info">入会金</th>
-				<td class="text-lg"><b style="color:#FF6600;">3500円</b></td>
+				<td class="text-lg">3500円</td>
 			</tr>
 			<tr>
 				<th class="bg-info">教材費</th>
