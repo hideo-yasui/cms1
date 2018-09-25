@@ -1,13 +1,6 @@
 <h2 class="main-title">学習内容について</h2>
 <h6 class="mb-4 ml-4">タイピングトレーニング、カリキュラム別のワークショップを６０分程度実施し、<br>
-	その後、自立学習の時間を取ることで、自分のペースで着実にステップアップしていけます。<br>
-	<br>
-	カリキュラム別の内容については
-	<a class="btn mx-1" href="/curriculum">
-		こちらをご確認
-		<i class="fa fa-chevron-circle-down ml-1"></i>
-	</a>
-	をご確認ください
+	その後、自立学習の時間を取ることで、自分のペースで着実にステップアップしていけます。
 </h6>
 <ul class="timeline timeline-inverse">
 	<li class="time-label">
@@ -40,7 +33,14 @@
 			</h3>
 			<div class="timeline-body">
 				PCの操作を講師と一緒に進め、カリキュラム別の学習内容を進めていきます。<br>
-				途中、わからなくなったらすぐに質問し、解決ができるので、スムーズに学習を進めることができます。
+				途中、わからなくなったらすぐに質問し、解決ができるので、スムーズに学習を進めることができます。<br>
+				カリキュラム別の内容については
+				<a class="btn mx-1" href="/curriculum">
+					こちらをご確認
+					<i class="fa fa-chevron-circle-down ml-1"></i>
+				</a>
+				をご確認ください
+
 			</div>
 		</div>
 	</li>

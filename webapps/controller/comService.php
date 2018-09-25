@@ -452,9 +452,16 @@ class comService extends Controller
 		return $this->getResponce();
 	}
 	public function send_slack(){
+		/*
 		if(sendSlack("admin_school", "INFO", ":ghost", "test message", 'https://hooks.slack.com/services/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')){
 			return $this->errorResponce();
 		}
+		*/
+		$slackApiKey = 'xxxx-xxxxxxxxx-xxxx'; //上で作成したAPIキー
+		$text = 'Hello!';
+		$text = urlencode($text);
+		$url = "https://slack.com/api/chat.postMessage?token=${slackApiKey}&channel=%23hogehoge&text=${text}&as_user=true";
+		file_get_contents($url);
 		return $this->getResponce();
 	}
 	public function send_mail(){

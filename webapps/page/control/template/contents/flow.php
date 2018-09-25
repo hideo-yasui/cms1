@@ -19,10 +19,10 @@
 							<table class="table-striped">
 								<tbody>
 									<tr>
-										<th class="p-2 bg-success text-center" style="vertical-align: middle;" width=20%>
+										<th class="p-2 bg-success text-center" style="vertical-align: middle;" width=30%>
 											<i class="fa fa-phone mr-1"></i>
 											<span class="btn-label">
-												お電話での<br>ご連絡
+												お電話でのご連絡
 											</span>
 										</th>
 										<td class="p-2 pl-4"><b class="text-lg" style="color:#FF6600;">090-1234-4678</b><br>
@@ -33,7 +33,7 @@
 										<th class="p-2 bg-success text-center" style="vertical-align: middle;" width=20%>
 											<i class="fa fa-envelope mr-1"></i>
 											<span class="btn-label">
-												お問合せ<br>フォーム
+												お問合せフォーム
 											</span>
 										</th>
 										<td class="p-2 pl-4">
